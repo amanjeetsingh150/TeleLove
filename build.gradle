@@ -19,6 +19,7 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven { url "https://jitpack.io" }
     }
     ext {
         androidSupportVersion = "26.1.0"
@@ -28,6 +29,7 @@ allprojects {
         rxJavaVersion="2.1.2"
         rxAndroidVersion="2.0.1"
         rxJavaAdapterVersion="2.3.0"
+        daggerVersion="2.9"
     }
 }
 
