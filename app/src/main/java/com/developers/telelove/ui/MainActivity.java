@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         showsRecyclerView.setAdapter(popularTvShowsAdapter);
-        progressBar.setVisibility(View.GONE);
         scrollListener = new PaginationScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int current_page) {
@@ -100,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
                         resultList = popularPageResult.getResults();
                         hideLoadMoreSpinner();
                         showData(resultList);
+                        progressBar.setVisibility(View.GONE);
                     }
 
                     @Override
