@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.developers.telelove.R;
@@ -32,8 +33,8 @@ import butterknife.ButterKnife;
 
 public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final int ITEM = 0;
-    private static final int LOADING = 1;
+    public static final int ITEM = 0;
+    public static final int LOADING = 1;
     private Context context;
     private List<Result> resultList;
     private boolean isLoadingItemAdded = false;
@@ -72,7 +73,8 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         Palette palette = Palette.from(bitmap).generate();
                         ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
-                        int color=palette.getMutedColor(0xFF333333);
+                        ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
+                        int color = palette.getMutedColor(0xFF333333);
                         ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
                     }
 
@@ -144,6 +146,9 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         @BindView(R.id.textview_popular_element)
         TextView popularShowTitle;
+
+        @BindView(R.id.popular_shows_progress)
+        ProgressBar progressBar;
 
         public PopularTvViewHolder(View itemView) {
             super(itemView);

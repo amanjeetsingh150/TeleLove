@@ -21,6 +21,12 @@
             android:contentDescription="@string/app_name"
             android:scaleType="centerCrop" />
 
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/popular_shows_progress"/>
+
         <TextView
             android:id="@+id/textview_popular_element"
             android:layout_width="match_parent"

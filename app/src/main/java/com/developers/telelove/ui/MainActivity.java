@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
@@ -33,12 +35,15 @@ public class MainActivity extends AppCompatActivity {
     public static final int START_PAGE = 1;
     @BindView(R.id.shows_recycler_view)
     RecyclerView showsRecyclerView;
+    @BindView(R.id.progress_bar_grid)
+    ProgressBar progressBar;
     @Inject
     Retrofit retrofit;
     Observable<PopularPageResult> pageResultObservable;
     private PopularTvShowsAdapter popularTvShowsAdapter;
     private List<Result> resultList;
     private PaginationScrollListener scrollListener;
+    private GridLayoutManager gridLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +55,21 @@ public class MainActivity extends AppCompatActivity {
                 .getPopularShows(BuildConfig.TV_KEY, START_PAGE);
         getPopularShowsFromApi(START_PAGE);
         popularTvShowsAdapter = new PopularTvShowsAdapter(getApplicationContext(), resultList);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
+        gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         showsRecyclerView.setLayoutManager(gridLayoutManager);
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (popularTvShowsAdapter.getItemViewType(position) ==
+                        PopularTvShowsAdapter.LOADING) {
+                    return 2;
+                } else {
+                    return 1;
+                }
+            }
+        });
         showsRecyclerView.setAdapter(popularTvShowsAdapter);
+        progressBar.setVisibility(View.GONE);
         scrollListener = new PaginationScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int current_page) {
