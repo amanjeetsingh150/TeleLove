@@ -41,6 +41,9 @@ public class ShowsProvider extends ContentProvider {
                         ShowContract.PopularShows.COLUMN_ID + " =?",
                         new String[]{String.valueOf(ContentUris.parseId(uri))});
         }
+        if (rowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
         return rowsDeleted;
     }
 
@@ -57,7 +60,7 @@ public class ShowsProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         SQLiteDatabase database = showsOpenHelper.getWritableDatabase();
         Uri returnUri = null;
         long id;
@@ -70,6 +73,7 @@ public class ShowsProvider extends ContentProvider {
                 returnUri = ShowContract.PopularShows.buildPopularShowsUri(id);
                 break;
         }
+        getContext().getContentResolver().notifyChange(uri, null);
         return returnUri;
     }
 
@@ -87,12 +91,14 @@ public class ShowsProvider extends ContentProvider {
             case POPULAR:
                 mCursor = showsOpenHelper.getReadableDatabase().query(ShowContract.PopularShows.TABLE_NAME,
                         projection, selection, selectionArgs, null, null, sortOrder);
+                mCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 return mCursor;
             case POPULAR_WITH_ID:
                 mCursor = showsOpenHelper.getReadableDatabase().query(ShowContract.PopularShows.TABLE_NAME,
                         projection, ShowContract.PopularShows.COLUMN_ID + " =? ",
                         new String[]{String.valueOf(ContentUris.parseId(uri))},
                         null, null, sortOrder);
+                mCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 return mCursor;
             default:
                 throw new UnsupportedOperationException("Unknown Uri " + uri);
@@ -116,6 +122,38 @@ public class ShowsProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown Uri " + uri);
         }
+        if (numUpdated != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
         return numUpdated;
+    }
+
+    @Override
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+        SQLiteDatabase database = showsOpenHelper.getWritableDatabase();
+
+        switch (uriMatcher.match(uri)) {
+            case POPULAR:
+                int count = 0;
+                database.beginTransaction();
+                try {
+                    for (ContentValues contentValues : values) {
+                        long id = database.insert(ShowContract.PopularShows.TABLE_NAME,
+                                null, contentValues);
+                        if (id == -1) {
+                            count++;
+                        }
+                    }
+                    database.setTransactionSuccessful();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    database.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return count;
+            default:
+                throw new UnsupportedOperationException("Unknown URI " + uri);
+        }
     }
 }

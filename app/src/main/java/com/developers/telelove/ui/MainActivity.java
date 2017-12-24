@@ -1,10 +1,14 @@
 package com.developers.telelove.ui;
 
+import android.database.Cursor;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.net.Uri;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -12,11 +16,13 @@ import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
 import com.developers.telelove.adapters.PopularTvShowsAdapter;
+import com.developers.telelove.data.ShowContract;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.PaginationScrollListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -30,9 +36,11 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int START_PAGE = 1;
+    private static final int SHOWS_LOADER = 2;
     @BindView(R.id.shows_recycler_view)
     RecyclerView showsRecyclerView;
     @BindView(R.id.progress_bar_grid)
@@ -41,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     Retrofit retrofit;
     Observable<PopularPageResult> pageResultObservable;
     private PopularTvShowsAdapter popularTvShowsAdapter;
-    private List<Result> resultList;
+    private List<Result> resultList = new ArrayList<>();
     private PaginationScrollListener scrollListener;
     private GridLayoutManager gridLayoutManager;
 
@@ -51,10 +59,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         ((App) getApplication()).getNetComponent().inject(this);
-        pageResultObservable = retrofit.create(ApiInterface.class)
-                .getPopularShows(BuildConfig.TV_KEY, START_PAGE);
-        getPopularShowsFromApi(START_PAGE);
-        popularTvShowsAdapter = new PopularTvShowsAdapter(getApplicationContext(), resultList);
+        initAdapter(resultList);
         gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         showsRecyclerView.setLayoutManager(gridLayoutManager);
         gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -68,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        showsRecyclerView.setAdapter(popularTvShowsAdapter);
         scrollListener = new PaginationScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int current_page) {
@@ -76,6 +80,13 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         showsRecyclerView.addOnScrollListener(scrollListener);
+        getSupportLoaderManager().initLoader(SHOWS_LOADER, null, this);
+    }
+
+    private void initAdapter(List<Result> results) {
+        popularTvShowsAdapter = new PopularTvShowsAdapter(getApplicationContext(),
+                results);
+        showsRecyclerView.setAdapter(popularTvShowsAdapter);
     }
 
     public void getPopularShowsFromApi(int page) {
@@ -134,4 +145,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Uri uri;
+        CursorLoader mCursorLoader;
+        uri = ShowContract.PopularShows.uri;
+        mCursorLoader = new CursorLoader(getApplicationContext(), uri,
+                ShowContract.PopularShows.projectionsForMainActivity,
+                null, null, null);
+        return mCursorLoader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.getCount() > 0) {
+            getShowsFromCursor(data);
+        }
+    }
+
+    private void getShowsFromCursor(Cursor data) {
+        if (data != null) {
+            data.moveToFirst();
+
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        initAdapter(null);
+    }
 }
