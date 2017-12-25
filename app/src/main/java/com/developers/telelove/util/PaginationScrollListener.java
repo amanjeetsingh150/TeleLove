@@ -19,9 +19,9 @@ public abstract class PaginationScrollListener extends RecyclerView.OnScrollList
 
     private int current_page = 1;
 
-    private GridLayoutManager gridLayoutManager;
+    private LinearLayoutManager gridLayoutManager;
 
-    public PaginationScrollListener(GridLayoutManager gridLayoutManager) {
+    public PaginationScrollListener(LinearLayoutManager gridLayoutManager) {
         this.gridLayoutManager = gridLayoutManager;
     }
 

@@ -1,6 +1,8 @@
 package com.developers.telelove.ui;
 
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.support.v4.app.LoaderManager;
@@ -27,9 +30,12 @@ import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.util.ApiInterface;
+import com.developers.telelove.util.Constants;
 import com.developers.telelove.util.PaginationScrollListener;
 import com.developers.telelove.util.Utility;
+import com.google.gson.Gson;
 
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,9 +53,11 @@ import retrofit2.Retrofit;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor>, Utility.ClickCallBacks {
 
 
+    private static final int START_PAGE = 1;
     private static final int SHOWS_LOADER = 2;
     private static final String TAG = MainFragment.class.getSimpleName();
     @BindView(R.id.shows_recycler_view)
@@ -58,9 +66,15 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     ProgressBar progressBar;
     @Inject
     Retrofit retrofit;
+    @Inject
+    SharedPreferences sharedPreferences;
     Observable<PopularPageResult> pageResultObservable;
     PaginationScrollListener scrollListener;
-    GridLayoutManager gridLayoutManager;
+    LinearLayoutManager linearLayoutManager;
+    List<Result> results;
+    String popularShowsJson, resultJson;
+    Gson gson;
+    int last;
     private PopularTvShowsAdapter popularTvShowsAdapter;
     private List<Result> resultList = new ArrayList<>();
     private List<PopularResultData> popularResultList = new ArrayList<>();
@@ -77,21 +91,11 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, view);
         ((App) getActivity().getApplication()).getNetComponent().inject(this);
-        gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+        linearLayoutManager = new LinearLayoutManager(getActivity());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         initAdapter(resultList, 1);
-        showsRecyclerView.setLayoutManager(gridLayoutManager);
-        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                if (popularTvShowsAdapter.getItemViewType(position) ==
-                        PopularTvShowsAdapter.LOADING) {
-                    return 2;
-                } else {
-                    return 1;
-                }
-            }
-        });
-        scrollListener = new PaginationScrollListener(gridLayoutManager) {
+        showsRecyclerView.setLayoutManager(linearLayoutManager);
+        scrollListener = new PaginationScrollListener(linearLayoutManager) {
             @Override
             public void onLoadMore(int current_page) {
                 if (Utility.isNetworkConnected(getActivity())) {
@@ -110,7 +114,9 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     private void initAdapter(List<Result> results, int page) {
         popularTvShowsAdapter = new PopularTvShowsAdapter(getActivity(),
                 results, page);
+        popularTvShowsAdapter.setClickCallBacks(this);
         showsRecyclerView.setAdapter(popularTvShowsAdapter);
+        last = linearLayoutManager.getItemCount();
     }
 
     public void getPopularShowsFromApi(int page) {
@@ -187,11 +193,10 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
             initAdapter(resultList, 1);
             progressBar.setVisibility(View.GONE);
         }
-
     }
 
     private List<Result> getShowsFromCursor(Cursor data) {
-        List<Result> results = new ArrayList<>();
+        results = new ArrayList<>();
         if (data != null) {
             data.moveToFirst();
             while (data.moveToNext()) {
@@ -232,6 +237,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 popularResultData.setOverview(overview);
                 popularResultData.setBackDropImagePath(backdropImage);
                 popularResultData.setTrailer(trailer);
+                Log.d(TAG, trailer + " TRRRRRRRRRRRRRRRRRRRR");
                 popularResultList.add(popularResultData);
             }
             data.close();
@@ -244,4 +250,35 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         initAdapter(null, 1);
     }
 
+
+    @Override
+    public void onClick(Result result, int position) {
+        //TODO:Implementation of master Detail
+        gson = new Gson();
+        if (position >= last) {
+            //Send results
+            Log.d(TAG, "On page greater than 1");
+            resultJson = gson.toJson(result);
+            Log.d(TAG, resultJson);
+            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
+            //startActivity(intent);
+        } else {
+            //Send popularResults
+            //For managing cache when offline
+            Log.d(TAG, "On page 1");
+            PopularResultData popularResultDataClicked = null;
+            for (int i = 0; i < popularResultList.size(); i++) {
+                if (popularResultList.get(i).getTitle().equals(result.getName())) {
+                    popularResultDataClicked = popularResultList.get(i);
+                    break;
+                }
+            }
+            popularShowsJson = gson.toJson(popularResultDataClicked);
+            Log.d(TAG, popularShowsJson);
+            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            intent.putExtra(Constants.KEY_POPULAR_SHOWS, popularShowsJson);
+            //startActivity(intent);
+        }
+    }
 }

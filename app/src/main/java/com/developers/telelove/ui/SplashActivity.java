@@ -129,8 +129,7 @@ public class SplashActivity extends AppCompatActivity {
                             Log.d(TAG, result.getName() + " -------- " + backDropUri.toString());
                             popularShowsValues.put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG,
                                     backDropUri.toString());
-                            trailer = fetchVideo(result.getId());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailer);
+                            fetchVideo(result.getId());
                             vector.add(popularShowsValues);
                         }
                         if (vector.size() > 0) {
@@ -144,7 +143,7 @@ public class SplashActivity extends AppCompatActivity {
                 });
     }
 
-    private String fetchVideo(int id) {
+    private void fetchVideo(int id) {
         videoResultObservable = retrofit.create(ApiInterface.class)
                 .getTrailers(id, BuildConfig.TV_KEY);
         videoResultObservable.subscribeOn(Schedulers.io())
@@ -171,11 +170,12 @@ public class SplashActivity extends AppCompatActivity {
                     public void onComplete() {
                         if (!(disposable.isDisposed())) {
                             disposable.dispose();
-
                         }
-                        if (videoDetailResults != null) {
+                        Log.d(TAG, "Videooooooooooooooooooo " + videoDetailResults);
+                        if (videoDetailResults.size() > 0) {
                             for (VideoDetailResult videoDetail : videoDetailResults) {
                                 //when id has some value
+                                Log.d(TAG, videoDetail.getKey() + " KEYYYYYYYYYYY");
                                 if (videoDetail.getKey().length() != 0) {
                                     Uri trailerUri = Uri.parse(Constants.YOUTUBE_BASE_URL)
                                             .buildUpon()
@@ -186,12 +186,12 @@ public class SplashActivity extends AppCompatActivity {
                                 }
                             }
                         } else {
-                            Log.d(TAG, "NULLLLLLLLLLLLLLLLL");
-                            trailerUrl = "";
+                            Log.d(TAG, "Not available");
+                            trailerUrl = getString(R.string.trailer_not_available_error);
                         }
+                        popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailerUrl);
                     }
                 });
-        return trailerUrl;
     }
 
     @Override

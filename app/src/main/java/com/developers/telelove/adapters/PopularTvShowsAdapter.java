@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -42,6 +43,7 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public static final int ITEM = 0;
     public static final int LOADING = 1;
     private static final String TAG = PopularTvShowsAdapter.class.getSimpleName();
+    Utility.ClickCallBacks clickCallBacks;
     private Context context;
     private List<Result> resultList;
     private int page;
@@ -73,7 +75,7 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
         switch (getItemViewType(position)) {
             case ITEM:
                 uri = resultList.get(position).getBackdropPath();
@@ -89,13 +91,35 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 }
                 ((PopularTvViewHolder) holder).popularShowTitle
                         .setText(resultList.get(position).getName());
+                ((PopularTvViewHolder) holder).popularShowImage.setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                clickCallBacks.onClick(resultList.get(position), position);
+                            }
+                        }
+                );
                 break;
             case LOADING:
                 if (!Utility.isNetworkConnected(context)) {
                     ((LoadingViewHolder) holder).syncFb.setVisibility(View.VISIBLE);
-                    ((LoadingViewHolder) holder).progressBarForMoreShows.setVisibility(View.GONE);
+                    ((LoadingViewHolder) holder).progressBarForMoreShows
+                            .setVisibility(View.GONE);
+                    ((LoadingViewHolder) holder).syncFb.setOnClickListener(
+                            new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    if (Utility.isNetworkConnected(context)) {
+                                        //Load the next page
+                                        Log.d(TAG, "Broadcast for next page loading");
+                                    } else {
+                                        Snackbar.make(view,
+                                                context.getString(R.string.no_internet_connection),
+                                                Snackbar.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                 }
-
                 break;
         }
     }
@@ -181,6 +205,10 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
             }
         });
+    }
+
+    public void setClickCallBacks(Utility.ClickCallBacks clickCallBacks) {
+        this.clickCallBacks = clickCallBacks;
     }
 
     @Override

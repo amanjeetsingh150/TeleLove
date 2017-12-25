@@ -2,6 +2,7 @@ package com.developers.telelove.di.component;
 
 import com.developers.telelove.di.module.AppModule;
 import com.developers.telelove.di.module.NetModule;
+import com.developers.telelove.ui.DetailsFragment;
 import com.developers.telelove.ui.MainActivity;
 import com.developers.telelove.ui.MainFragment;
 import com.developers.telelove.ui.SplashActivity;
@@ -22,5 +23,7 @@ public interface NetComponent {
     void inject(SplashActivity splashActivity);
 
     void inject(MainFragment mainFragment);
+
+    void inject(DetailsFragment detailsFragment);
 
 }

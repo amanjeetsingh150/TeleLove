@@ -5,6 +5,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.developers.telelove.model.PopularShowsModel.Result;
+
 /**
  * Created by Amanjeet Singh on 24/12/17.
  */
@@ -27,6 +29,10 @@ public class Utility {
             return true;
         }
         return false;
+    }
+
+    public interface ClickCallBacks {
+        void onClick(Result result,int position);
     }
 
 }
