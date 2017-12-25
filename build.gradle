@@ -30,6 +30,9 @@ allprojects {
         rxAndroidVersion="2.0.1"
         rxJavaAdapterVersion="2.3.0"
         daggerVersion="2.9"
+        okHttpVersion="2.6.0"
+        okHttp3DownloaderVersion="1.1.0"
+        materialFavoriteButtonsVersion="0.1.4"
     }
 }
 
