@@ -164,9 +164,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void getShowsFromCursor(Cursor data) {
+        List<Result> results = new ArrayList<>();
         if (data != null) {
             data.moveToFirst();
+            while (data.moveToNext()) {
+                int showId = data.getInt(data.getColumnIndex(ShowContract.PopularShows.COLUMN_ID));
+                String title = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_TITLE));
+                String poster=data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_POSTER));
+                String releaseDate=data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_RELEASE_DATE));
+                String rate=data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE));
+                String overview=data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_OVERVIEW));
+                String trailer=data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_TRAILER));
+                String backdropImage=data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_BACKDROP_IMG));
 
+            }
         }
     }
 
