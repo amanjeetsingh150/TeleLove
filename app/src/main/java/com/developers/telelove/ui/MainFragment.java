@@ -47,10 +47,11 @@ import retrofit2.Retrofit;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
 
     private static final int SHOWS_LOADER = 2;
+    private static final String TAG = MainFragment.class.getSimpleName();
     @BindView(R.id.shows_recycler_view)
     RecyclerView showsRecyclerView;
     @BindView(R.id.progress_bar_grid)
@@ -76,8 +77,8 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, view);
         ((App) getActivity().getApplication()).getNetComponent().inject(this);
-        initAdapter(resultList);
         gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+        initAdapter(resultList, 1);
         showsRecyclerView.setLayoutManager(gridLayoutManager);
         gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -104,14 +105,12 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         };
         showsRecyclerView.addOnScrollListener(scrollListener);
         getActivity().getSupportLoaderManager().initLoader(SHOWS_LOADER, null, this);
-
-
         return view;
     }
 
-    private void initAdapter(List<Result> results) {
+    private void initAdapter(List<Result> results, int page) {
         popularTvShowsAdapter = new PopularTvShowsAdapter(getActivity(),
-                results);
+                results, page);
         showsRecyclerView.setAdapter(popularTvShowsAdapter);
     }
 
@@ -186,7 +185,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.getCount() > 0) {
             resultList = getShowsFromCursor(data);
-            initAdapter(resultList);
+            initAdapter(resultList, 1);
         }
 
     }
@@ -203,6 +202,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 String rate = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE));
                 String overview = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_OVERVIEW));
                 String backdropImage = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_BACKDROP_IMG));
+                Log.d(TAG, title);
                 Result popularResultData = new Result();
                 popularResultData.setId(showId);
                 popularResultData.setName(title);
@@ -234,13 +234,14 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 popularResultData.setTrailer(trailer);
                 popularResultList.add(popularResultData);
             }
+            data.close();
         }
         return results;
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        initAdapter(null);
+        initAdapter(null, 1);
     }
 
 }

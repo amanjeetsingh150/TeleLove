@@ -61,8 +61,7 @@ public class SplashActivity extends AppCompatActivity {
     private Uri uri, backDropUri;
     private Observable<VideoResult> videoResultObservable;
     private String trailerUrl, trailer;
-    private ByteArrayOutputStream byteArrayOutputStreamPoster, byteArrayOutputStreamBackDrop;
-    private String encodedPoster, encodedStringBackDrop;
+    private ContentValues popularShowsValues;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +69,6 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         ButterKnife.bind(this);
         ((App) getApplication()).getNetComponent().inject(this);
-        byteArrayOutputStreamBackDrop = new ByteArrayOutputStream();
-        byteArrayOutputStreamPoster = new ByteArrayOutputStream();
         if (sharedPreferences.getBoolean(firstRun, true)) {
             getPopularShowsFromApi(FIRST_PAGE);
         } else {
@@ -110,7 +107,7 @@ public class SplashActivity extends AppCompatActivity {
                         }
                         vector = new Vector<>(resultList.size());
                         for (Result result : resultList) {
-                            final ContentValues popularShowsValues = new ContentValues();
+                            popularShowsValues = new ContentValues();
                             popularShowsValues.put(ShowContract.PopularShows.COLUMN_ID
                                     , result.getId());
                             popularShowsValues.put(ShowContract.PopularShows.COLUMN_TITLE
@@ -118,62 +115,20 @@ public class SplashActivity extends AppCompatActivity {
                             uri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                                     .appendEncodedPath(result.getPosterPath())
                                     .build();
-                            Target target = new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap,
-                                                           Picasso.LoadedFrom from) {
-                                    bitmap.compress(Bitmap.CompressFormat.JPEG,
-                                            100,
-                                            byteArrayOutputStreamPoster);
-                                    encodedPoster = Base64
-                                            .encodeToString(byteArrayOutputStreamPoster
-                                                    .toByteArray(), Base64.DEFAULT);
-                                    popularShowsValues.put(ShowContract.PopularShows.COLUMN_BASE64_POSTER,
-                                            encodedPoster);
-                                }
-
-                                @Override
-                                public void onBitmapFailed(Drawable errorDrawable) {
-                                    Log.d(TAG,"FAILED LOADING");
-                                }
-
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                }
-                            };
-                            Picasso.with(getApplicationContext()).load(uri).into(target);
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_POSTER, uri.toString());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_RELEASE_DATE, result.getFirstAirDate());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE, result.getVoteAverage());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW, result.getOverview());
+                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_POSTER,
+                                    uri.toString());
+                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_RELEASE_DATE,
+                                    result.getFirstAirDate());
+                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE,
+                                    result.getVoteAverage());
+                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW,
+                                    result.getOverview());
                             backDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                                     .appendEncodedPath(result.getBackdropPath())
                                     .build();
-                            Target backdropTarget = new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100,
-                                            byteArrayOutputStreamBackDrop);
-                                    encodedStringBackDrop = Base64.encodeToString(
-                                            byteArrayOutputStreamBackDrop.toByteArray(),
-                                            Base64.DEFAULT);
-                                    popularShowsValues.put(ShowContract.PopularShows.COLUMN_BASE64_BACKDROP,
-                                            encodedStringBackDrop);
-                                }
-
-                                @Override
-                                public void onBitmapFailed(Drawable errorDrawable) {
-                                    Log.d(TAG,"FAILED LOADING");
-                                }
-
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                }
-                            };
-                            Picasso.with(getApplicationContext()).load(backDropUri).into(backdropTarget);
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG, backDropUri.toString());
+                            Log.d(TAG, result.getName() + " -------- " + backDropUri.toString());
+                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG,
+                                    backDropUri.toString());
                             trailer = fetchVideo(result.getId());
                             popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailer);
                             vector.add(popularShowsValues);

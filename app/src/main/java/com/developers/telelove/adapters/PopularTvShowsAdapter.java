@@ -1,5 +1,6 @@
 package com.developers.telelove.adapters;
 
+import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -7,6 +8,7 @@ import android.net.Uri;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +16,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.developers.telelove.App;
 import com.developers.telelove.R;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.util.Constants;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -35,14 +39,17 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     public static final int ITEM = 0;
     public static final int LOADING = 1;
+    private static final String TAG = PopularTvShowsAdapter.class.getSimpleName();
     private Context context;
     private List<Result> resultList;
-
+    private int page;
+    private Uri uri;
     private boolean isLoadingItemAdded = false;
 
-    public PopularTvShowsAdapter(Context context, List<Result> resultList) {
+    public PopularTvShowsAdapter(Context context, List<Result> resultList, int page) {
         this.context = context;
         this.resultList = resultList;
+        this.page = page;
     }
 
     @Override
@@ -66,29 +73,29 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
         switch (getItemViewType(position)) {
             case ITEM:
-                Uri uri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                        .appendEncodedPath(resultList.get(position).getBackdropPath()).build();
-                Picasso.with(context).load(uri).into(new Target() {
+                Log.d("ADAAAAAA", "result--------" + resultList.get(position).getName() + " " + resultList.get(position).getBackdropPath());
+                App.picassoWithCache.with(context).load(resultList.get(position).getBackdropPath())
+                        .into(new Target() {
 
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        Palette palette = Palette.from(bitmap).generate();
-                        ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
-                        ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
-                        int color = palette.getMutedColor(0xFF333333);
-                        ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
-                    }
+                            @Override
+                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                Palette palette = Palette.from(bitmap).generate();
+                                ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
+                                ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
+                                int color = palette.getMutedColor(0xFF333333);
+                                ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
+                            }
 
-                    @Override
-                    public void onBitmapFailed(Drawable errorDrawable) {
+                            @Override
+                            public void onBitmapFailed(Drawable errorDrawable) {
+                                Log.d(TAG, "Failed");
+                            }
 
-                    }
+                            @Override
+                            public void onPrepareLoad(Drawable placeHolderDrawable) {
 
-                    @Override
-                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                    }
-                });
+                            }
+                        });
                 ((PopularTvViewHolder) holder).popularShowTitle.setText(resultList.get(position).getName());
                 break;
             case LOADING:

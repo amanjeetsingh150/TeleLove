@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class ShowsOpenHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "shows.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
     public static final String CREATE_POPULAR_TABLE = "CREATE TABLE " + ShowContract.PopularShows.TABLE_NAME
             + " (" + ShowContract.PopularShows._ID + " INTEGER PRIMARY KEY, " +
             ShowContract.PopularShows.COLUMN_ID + " INTEGER NOT NULL, " +
@@ -21,9 +21,7 @@ public class ShowsOpenHelper extends SQLiteOpenHelper {
             ShowContract.PopularShows.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
             ShowContract.PopularShows.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
             ShowContract.PopularShows.COLUMN_TRAILER + " TEXT," +
-            ShowContract.PopularShows.COLUMN_BACKDROP_IMG + " TEXT NOT NULL," +
-            ShowContract.PopularShows.COLUMN_BASE64_POSTER + " TEXT NOT NULL, " +
-            ShowContract.PopularShows.COLUMN_BASE64_BACKDROP + " TEXT NOT NULL " + ")";
+            ShowContract.PopularShows.COLUMN_BACKDROP_IMG + " TEXT NOT NULL" + ")";
 
     public ShowsOpenHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
