@@ -37,11 +37,12 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public static final int LOADING = 1;
     private Context context;
     private List<Result> resultList;
+
     private boolean isLoadingItemAdded = false;
 
     public PopularTvShowsAdapter(Context context, List<Result> resultList) {
         this.context = context;
-        this.resultList = new ArrayList<>();
+        this.resultList = resultList;
     }
 
     @Override

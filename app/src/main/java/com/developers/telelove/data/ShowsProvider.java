@@ -24,7 +24,7 @@ public class ShowsProvider extends ContentProvider {
     public static UriMatcher buildUriMatcher() {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_POPULAR, POPULAR);
-        uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_POPULAR, POPULAR_WITH_ID);
+        uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_POPULAR + "/*", POPULAR_WITH_ID);
         return uriMatcher;
     }
 

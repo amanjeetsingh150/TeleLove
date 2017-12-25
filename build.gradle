@@ -30,7 +30,6 @@ allprojects {
         rxAndroidVersion="2.0.1"
         rxJavaAdapterVersion="2.3.0"
         daggerVersion="2.9"
-        circularImageVersion="2.2.0"
     }
 }
 

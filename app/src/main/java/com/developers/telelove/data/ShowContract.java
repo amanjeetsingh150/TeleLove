@@ -33,11 +33,14 @@ public class ShowContract {
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_TRAILER = "trailer";
         public static final String COLUMN_BACKDROP_IMG = "backdrop";
+        public static final String COLUMN_BASE64_POSTER = "base64Poster";
+        public static final String COLUMN_BASE64_BACKDROP = "base64Backdrop";
         public static final String[] projectionsForMainActivity =
                 {PopularShows._ID, PopularShows.COLUMN_ID, PopularShows.COLUMN_POSTER,
                         PopularShows.COLUMN_TITLE, PopularShows.COLUMN_RELEASE_DATE,
                         PopularShows.COLUMN_VOTE_AVERAGE, PopularShows.COLUMN_OVERVIEW,
                         PopularShows.COLUMN_TRAILER, PopularShows.COLUMN_BACKDROP_IMG};
+
 
         public static Uri buildPopularShowsUri(long popularId) {
             return ContentUris.withAppendedId(CONTENT_URI, popularId);
