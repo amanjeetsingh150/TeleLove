@@ -20,4 +20,13 @@ public class Utility {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
     }
+
+    public static boolean validateUriForAppending(String path) {
+        Character character = path.charAt(0);
+        if (character.equals('/')) {
+            return true;
+        }
+        return false;
+    }
+
 }

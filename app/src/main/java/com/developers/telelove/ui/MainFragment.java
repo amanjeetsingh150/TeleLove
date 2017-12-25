@@ -97,7 +97,6 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 if (Utility.isNetworkConnected(getActivity())) {
                     getPopularShowsFromApi(current_page);
                 } else {
-                    //TODO:show sync button
                     Log.d(TAG, "No internet");
                     showLoadMoreSpinner();
                 }
@@ -186,6 +185,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         if (data.getCount() > 0) {
             resultList = getShowsFromCursor(data);
             initAdapter(resultList, 1);
+            progressBar.setVisibility(View.GONE);
         }
 
     }

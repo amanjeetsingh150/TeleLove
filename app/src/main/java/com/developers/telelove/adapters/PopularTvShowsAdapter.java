@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +21,7 @@ import com.developers.telelove.App;
 import com.developers.telelove.R;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.util.Constants;
+import com.developers.telelove.util.Utility;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -43,7 +45,8 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private Context context;
     private List<Result> resultList;
     private int page;
-    private Uri uri;
+    private String uri;
+    private Uri backDropUri;
     private boolean isLoadingItemAdded = false;
 
     public PopularTvShowsAdapter(Context context, List<Result> resultList, int page) {
@@ -73,33 +76,26 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
         switch (getItemViewType(position)) {
             case ITEM:
-                Log.d("ADAAAAAA", "result--------" + resultList.get(position).getName() + " " + resultList.get(position).getBackdropPath());
-                App.picassoWithCache.with(context).load(resultList.get(position).getBackdropPath())
-                        .into(new Target() {
-
-                            @Override
-                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                Palette palette = Palette.from(bitmap).generate();
-                                ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
-                                ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
-                                int color = palette.getMutedColor(0xFF333333);
-                                ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
-                            }
-
-                            @Override
-                            public void onBitmapFailed(Drawable errorDrawable) {
-                                Log.d(TAG, "Failed");
-                            }
-
-                            @Override
-                            public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                            }
-                        });
-                ((PopularTvViewHolder) holder).popularShowTitle.setText(resultList.get(position).getName());
+                uri = resultList.get(position).getBackdropPath();
+                if (Utility.validateUriForAppending(uri)) {
+                    //Required to build Uri
+                    backDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                            .appendEncodedPath(uri).build();
+                    //load without cache because we do not want large number of image to be in cache
+                    loadWithoutCache(backDropUri, holder);
+                } else {
+                    //load with cache
+                    loadWithCache(resultList.get(position).getBackdropPath(), holder);
+                }
+                ((PopularTvViewHolder) holder).popularShowTitle
+                        .setText(resultList.get(position).getName());
                 break;
             case LOADING:
-                //nothing
+                if (!Utility.isNetworkConnected(context)) {
+                    ((LoadingViewHolder) holder).syncFb.setVisibility(View.VISIBLE);
+                    ((LoadingViewHolder) holder).progressBarForMoreShows.setVisibility(View.GONE);
+                }
+
                 break;
         }
     }
@@ -139,6 +135,54 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
+    private void loadWithoutCache(Uri uri, final RecyclerView.ViewHolder holder) {
+        Picasso.with(context).load(uri).into(new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                Palette palette = Palette.from(bitmap).generate();
+                ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
+                ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
+                int color = palette.getMutedColor(0xFF333333);
+                ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                Log.d(TAG, "Failed to load");
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+            }
+        });
+    }
+
+    private void loadWithCache(String imageUrl, final RecyclerView.ViewHolder holder) {
+        Log.d(TAG, " With cache " + imageUrl);
+        App.picassoWithCache.with(context).load(imageUrl).into(new Target() {
+
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                Palette palette = Palette.from(bitmap).generate();
+                ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
+                ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
+                int color = palette.getMutedColor(0xFF333333);
+                ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                Log.d(TAG, "Failed");
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+            }
+        });
+    }
+
     @Override
     public int getItemCount() {
         return resultList.size();
@@ -164,10 +208,16 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
-    private class LoadingViewHolder extends RecyclerView.ViewHolder {
+    public class LoadingViewHolder extends RecyclerView.ViewHolder {
+
+        @BindView(R.id.paged_progress_bar)
+        ProgressBar progressBarForMoreShows;
+        @BindView(R.id.sync_fb)
+        FloatingActionButton syncFb;
 
         LoadingViewHolder(View itemView) {
             super(itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
 }
