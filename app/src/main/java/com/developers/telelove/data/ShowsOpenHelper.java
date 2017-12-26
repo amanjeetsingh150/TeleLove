@@ -14,7 +14,7 @@ public class ShowsOpenHelper extends SQLiteOpenHelper {
     public static final int DB_VERSION = 2;
     public static final String CREATE_POPULAR_TABLE = "CREATE TABLE " + ShowContract.PopularShows.TABLE_NAME
             + " (" + ShowContract.PopularShows._ID + " INTEGER PRIMARY KEY, " +
-            ShowContract.PopularShows.COLUMN_ID + " INTEGER NOT NULL, " +
+            ShowContract.PopularShows.COLUMN_ID + " TEXT NOT NULL, " +
             ShowContract.PopularShows.COLUMN_TITLE + " TEXT NOT NULL, " +
             ShowContract.PopularShows.COLUMN_POSTER + " TEXT NOT NULL, " +
             ShowContract.PopularShows.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +

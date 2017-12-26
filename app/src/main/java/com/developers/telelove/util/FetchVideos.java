@@ -1,14 +1,19 @@
 package com.developers.telelove.util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
+import com.developers.telelove.events.LaunchMessageEvent;
 import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.google.gson.Gson;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,17 +28,20 @@ import java.util.List;
  * Created by Amanjeet Singh on 26/12/17.
  */
 
-public class FetchVideos extends AsyncTask<Integer, Integer, List<VideoDetailResult>> {
+public class FetchVideos extends AsyncTask<Integer, Integer, String> {
 
     private static final String TAG = FetchVideos.class.getSimpleName();
-    OnRequestFinish onRequestFinish;
+    private static int current_size = 0;
+    private OnRequestFinish onRequestFinish;
+    private StringBuilder sb;
 
     public FetchVideos(OnRequestFinish onRequestFinish) {
         this.onRequestFinish = onRequestFinish;
+
     }
 
     @Override
-    protected List<VideoDetailResult> doInBackground(Integer... id) {
+    protected String doInBackground(Integer... id) {
         try {
             Uri trailerUri = Uri.parse(Constants.BASE_URL).buildUpon()
                     .appendPath(String.valueOf(id[0]))
@@ -44,18 +52,32 @@ public class FetchVideos extends AsyncTask<Integer, Integer, List<VideoDetailRes
             HttpURLConnection con1 = (HttpURLConnection) url.openConnection();
             InputStream is = con1.getInputStream();
             BufferedReader buff = new BufferedReader(new InputStreamReader(is));
-            StringBuilder sb = new StringBuilder();
+            sb = new StringBuilder();
             String rs;
             while ((rs = buff.readLine()) != null) {
                 sb.append(rs);
             }
-            Gson gson = new Gson();
-            VideoResult videoResult = gson.fromJson(sb.toString(), VideoResult.class);
-            onRequestFinish.onFinish(videoResult);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return sb.toString();
+    }
+
+    @Override
+    protected void onPostExecute(String sb) {
+        super.onPostExecute(sb);
+        Gson gson = new Gson();
+        VideoResult videoResult = gson.fromJson(sb, VideoResult.class);
+        onRequestFinish.onFinish(videoResult);
+        current_size++;
+        Log.d(TAG, current_size + " WITHHHHHHH " + Utility.PAGE_ONE_SHOWS_SIZE);
+        if (Utility.PAGE_ONE_SHOWS_SIZE  == current_size) {
+            //issue a broadcast that activity ready to launch
+            Log.d(TAG, " Brrrrrrrrrrr");
+            LaunchMessageEvent launchMessageEvent = new LaunchMessageEvent();
+            launchMessageEvent.setShouldLaunch(true);
+            EventBus.getDefault().post(launchMessageEvent);
+        }
     }
 
     public interface OnRequestFinish {

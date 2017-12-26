@@ -13,6 +13,8 @@ import com.developers.telelove.model.PopularShowsModel.Result;
 
 public class Utility {
 
+    public static int PAGE_ONE_SHOWS_SIZE = 0;
+
     public static boolean isNetworkConnected(Context context) {
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -32,11 +34,7 @@ public class Utility {
     }
 
     public interface ClickCallBacks {
-        void onClick(Result result,int position);
-    }
-
-    public interface onComplete{
-        void onResult(String results);
+        void onClick(Result result, int position);
     }
 
 }

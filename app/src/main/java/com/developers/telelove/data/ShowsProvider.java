@@ -116,8 +116,7 @@ public class ShowsProvider extends ContentProvider {
                 break;
             case POPULAR_WITH_ID:
                 numUpdated = showsOpenHelper.getWritableDatabase().update(ShowContract.PopularShows.TABLE_NAME,
-                        values, ShowContract.PopularShows.COLUMN_ID + " =? "
-                        , new String[]{String.valueOf(ContentUris.parseId(uri))});
+                        values, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown Uri " + uri);

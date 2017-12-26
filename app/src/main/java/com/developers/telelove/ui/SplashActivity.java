@@ -1,9 +1,12 @@
 package com.developers.telelove.ui;
 
 import android.app.Application;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -18,6 +21,8 @@ import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
 import com.developers.telelove.data.ShowContract;
+import com.developers.telelove.data.ShowsOpenHelper;
+import com.developers.telelove.events.LaunchMessageEvent;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.model.VideosModel.VideoDetailResult;
@@ -25,9 +30,14 @@ import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
 import com.developers.telelove.util.FetchVideos;
+import com.developers.telelove.util.Utility;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -60,21 +70,23 @@ public class SplashActivity extends AppCompatActivity {
     Retrofit retrofit;
     @BindView(R.id.splash_progress_bar)
     ProgressBar splashProgressBar;
-    int id;
-    Observable<List<Result>> listObservable;
     Vector<ContentValues> vector = new Vector<>();
+    ShowsOpenHelper showsOpenHelper;
+    SQLiteDatabase sqLiteDatabase;
     private Observable<PopularPageResult> pageResultObservable;
     private List<Result> resultList;
     private List<VideoDetailResult> videoDetailResults;
-    private Uri uri, backDropUri;
-    private Observable<VideoResult> videoResultObservable;
-    private String trailerUrl, trailer;
+    private Uri uri, backDropUri, updateUri;
+    private String trailerUrl, title, firstAirDate, overview, poster, backDropPath;
+    private Double voteAverage;
     private ContentValues popularShowsValues;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        showsOpenHelper = new ShowsOpenHelper(getApplicationContext());
+        sqLiteDatabase = showsOpenHelper.getWritableDatabase();
         ButterKnife.bind(this);
         ((App) getApplication()).getNetComponent().inject(this);
         if (sharedPreferences.getBoolean(firstRun, true)) {
@@ -86,7 +98,6 @@ public class SplashActivity extends AppCompatActivity {
 
 
     public void getPopularShowsFromApi(int page) {
-        id = 0;
         pageResultObservable = retrofit.create(ApiInterface.class)
                 .getPopularShows(BuildConfig.TV_KEY, page);
         pageResultObservable.subscribeOn(Schedulers.io())
@@ -111,49 +122,35 @@ public class SplashActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
+                        Utility.PAGE_ONE_SHOWS_SIZE = resultList.size();
+
                         if (!disposable.isDisposed()) {
                             disposable.dispose();
                         }
                         vector = new Vector<>(resultList.size());
                         for (Result result : resultList) {
-                            popularShowsValues = new ContentValues();
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_ID
-                                    , result.getId());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_TITLE
-                                    , result.getName());
+                            title = result.getName();
+                            firstAirDate = result.getFirstAirDate();
+                            voteAverage = result.getVoteAverage();
+                            overview = result.getOverview();
+                            poster = result.getPosterPath();
+                            backDropPath = result.getBackdropPath();
                             uri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                                    .appendEncodedPath(result.getPosterPath())
+                                    .appendEncodedPath(poster)
                                     .build();
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_POSTER,
-                                    uri.toString());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_RELEASE_DATE,
-                                    result.getFirstAirDate());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE,
-                                    result.getVoteAverage());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW,
-                                    result.getOverview());
                             backDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                                    .appendEncodedPath(result.getBackdropPath())
+                                    .appendEncodedPath(backDropPath)
                                     .build();
-                            Log.d(TAG, result.getName() + "Backdrop " + backDropUri.toString());
-                            popularShowsValues.put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG,
-                                    backDropUri.toString());
-                            fetchVideo(result.getId());
-                            vector.add(popularShowsValues);
+                            fetchVideo(String.valueOf(result.getId()), title, firstAirDate,
+                                    voteAverage, overview, uri.toString(), backDropUri.toString());
                         }
-                        if (vector.size() > 0) {
-                            ContentValues[] valueArray = new ContentValues[vector.size()];
-                            valueArray = vector.toArray(valueArray);
-                            getContentResolver().bulkInsert(ShowContract.PopularShows.uri, valueArray);
-                        }
-                        splashProgressBar.setVisibility(View.GONE);
-                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     }
                 });
     }
 
 
-    private void fetchVideo(int id) {
+    private void fetchVideo(String id, String title, String firstAirDate, Double voteAverage,
+                            String overview, String poster, String backDropPath) {
         new FetchVideos(videoResult -> {
             videoDetailResults = videoResult.getResults();
             if (videoDetailResults != null) {
@@ -175,14 +172,40 @@ public class SplashActivity extends AppCompatActivity {
                     trailerUrl = getString(R.string.trailer_not_available_error);
                 }
                 Log.d(TAG, "Trailer " + trailerUrl);
+                popularShowsValues = new ContentValues();
+                popularShowsValues.put(ShowContract.PopularShows.COLUMN_ID, id);
+                popularShowsValues.put(ShowContract.PopularShows.COLUMN_TITLE, title);
+                popularShowsValues.put(ShowContract.PopularShows.COLUMN_POSTER, poster);
+                popularShowsValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW, overview);
                 popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailerUrl);
+                popularShowsValues
+                        .put(ShowContract.PopularShows.COLUMN_RELEASE_DATE, firstAirDate);
+                popularShowsValues
+                        .put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE, voteAverage);
+                popularShowsValues
+                        .put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG, backDropPath);
+                long pos = sqLiteDatabase.insert(ShowContract.PopularShows.TABLE_NAME, null, popularShowsValues);
+                Log.d(TAG, "Changed " + pos + " FOR ID " + id);
             }
-        }).execute(id);
+        }).execute(Integer.parseInt(id));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         sharedPreferences.edit().putBoolean(firstRun, false).apply();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onLaunchMessageEvent(LaunchMessageEvent launchMessageEvent) {
+        splashProgressBar.setVisibility(View.GONE);
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
     }
 }

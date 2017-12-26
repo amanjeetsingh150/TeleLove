@@ -274,6 +274,7 @@ public class MainFragment extends Fragment implements
                     break;
                 }
             }
+            Log.d(TAG," jggjhgjhgjhg"+ popularResultDataClicked.getTrailer());
             popularShowsJson = gson.toJson(popularResultDataClicked);
             Log.d(TAG, popularShowsJson);
             Intent intent = new Intent(getActivity(), DetailActivity.class);
