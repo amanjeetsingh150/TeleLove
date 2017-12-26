@@ -21,6 +21,10 @@ android {
     buildTypes.each {
         it.buildConfigField('String', "TV_KEY", API_KEY)
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {

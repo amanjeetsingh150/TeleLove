@@ -35,4 +35,8 @@ public class Utility {
         void onClick(Result result,int position);
     }
 
+    public interface onComplete{
+        void onResult(String results);
+    }
+
 }

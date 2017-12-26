@@ -24,11 +24,14 @@ import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
+import com.developers.telelove.util.FetchVideos;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -40,6 +43,9 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
@@ -54,7 +60,9 @@ public class SplashActivity extends AppCompatActivity {
     Retrofit retrofit;
     @BindView(R.id.splash_progress_bar)
     ProgressBar splashProgressBar;
-    Vector<ContentValues> vector;
+    int id;
+    Observable<List<Result>> listObservable;
+    Vector<ContentValues> vector = new Vector<>();
     private Observable<PopularPageResult> pageResultObservable;
     private List<Result> resultList;
     private List<VideoDetailResult> videoDetailResults;
@@ -78,6 +86,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
     public void getPopularShowsFromApi(int page) {
+        id = 0;
         pageResultObservable = retrofit.create(ApiInterface.class)
                 .getPopularShows(BuildConfig.TV_KEY, page);
         pageResultObservable.subscribeOn(Schedulers.io())
@@ -126,7 +135,7 @@ public class SplashActivity extends AppCompatActivity {
                             backDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                                     .appendEncodedPath(result.getBackdropPath())
                                     .build();
-                            Log.d(TAG, result.getName() + " -------- " + backDropUri.toString());
+                            Log.d(TAG, result.getName() + "Backdrop " + backDropUri.toString());
                             popularShowsValues.put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG,
                                     backDropUri.toString());
                             fetchVideo(result.getId());
@@ -143,55 +152,32 @@ public class SplashActivity extends AppCompatActivity {
                 });
     }
 
+
     private void fetchVideo(int id) {
-        videoResultObservable = retrofit.create(ApiInterface.class)
-                .getTrailers(id, BuildConfig.TV_KEY);
-        videoResultObservable.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<VideoResult>() {
-                    Disposable disposable;
-
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        disposable = d;
-                    }
-
-                    @Override
-                    public void onNext(VideoResult videoResult) {
-                        videoDetailResults = videoResult.getResults();
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        if (!(disposable.isDisposed())) {
-                            disposable.dispose();
+        new FetchVideos(videoResult -> {
+            videoDetailResults = videoResult.getResults();
+            if (videoDetailResults != null) {
+                if (videoDetailResults.size() > 0) {
+                    for (VideoDetailResult videoDetail : videoDetailResults) {
+                        //when id has some value
+                        Log.d(TAG, videoDetail.getKey() + " KEY");
+                        if (videoDetail.getKey().length() != 0) {
+                            Uri trailerUri = Uri.parse(Constants.YOUTUBE_BASE_URL)
+                                    .buildUpon()
+                                    .appendQueryParameter("v", videoDetail.getKey())
+                                    .build();
+                            trailerUrl = trailerUri.toString();
+                            break;
                         }
-                        Log.d(TAG, "Videooooooooooooooooooo " + videoDetailResults);
-                        if (videoDetailResults.size() > 0) {
-                            for (VideoDetailResult videoDetail : videoDetailResults) {
-                                //when id has some value
-                                Log.d(TAG, videoDetail.getKey() + " KEYYYYYYYYYYY");
-                                if (videoDetail.getKey().length() != 0) {
-                                    Uri trailerUri = Uri.parse(Constants.YOUTUBE_BASE_URL)
-                                            .buildUpon()
-                                            .appendQueryParameter("v", videoDetail.getKey())
-                                            .build();
-                                    trailerUrl = trailerUri.toString();
-                                    break;
-                                }
-                            }
-                        } else {
-                            Log.d(TAG, "Not available");
-                            trailerUrl = getString(R.string.trailer_not_available_error);
-                        }
-                        popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailerUrl);
                     }
-                });
+                } else {
+                    Log.d(TAG, "Not available");
+                    trailerUrl = getString(R.string.trailer_not_available_error);
+                }
+                Log.d(TAG, "Trailer " + trailerUrl);
+                popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailerUrl);
+            }
+        }).execute(id);
     }
 
     @Override
