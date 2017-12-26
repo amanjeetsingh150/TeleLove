@@ -28,13 +28,13 @@
         android:layout_margin="15dp"
         app:srcCompat="@drawable/ic_tv" />
 
-    <ProgressBar
+    <com.wang.avi.AVLoadingIndicatorView
         android:id="@+id/splash_progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/splash_image"
         android:layout_centerHorizontal="true"
-        android:layout_margin="5dp" />
-
+        android:layout_margin="5dp"
+        android:layout_below="@+id/splash_image"
+        app:indicatorName="BallSpinFadeLoaderIndicator" />
 
 </RelativeLayout>

@@ -54,4 +54,5 @@ dependencies {
     implementation "com.jakewharton.picasso:picasso2-okhttp3-downloader:$okHttp3DownloaderVersion"
     compile "com.github.ivbaranov:materialfavoritebutton:$materialFavoriteButtonsVersion"
     compile 'org.greenrobot:eventbus:3.1.1'
+    compile 'com.wang.avi:library:2.1.3'
 }

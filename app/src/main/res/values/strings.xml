@@ -8,4 +8,5 @@
     <string name="add_favorites_text">Add to Favorites:</string>
     <string name="no_internet_connection">No internet Connectivity. Please connect and try again</string>
     <string name="trailer_not_available_error">Trailer not available</string>
+    <string name="page_key_preference">page</string>
 </resources>

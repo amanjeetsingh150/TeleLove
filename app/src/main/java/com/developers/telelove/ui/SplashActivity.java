@@ -34,6 +34,7 @@ import com.developers.telelove.util.Utility;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+import com.wang.avi.indicators.BallSpinFadeLoaderIndicator;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -69,14 +70,14 @@ public class SplashActivity extends AppCompatActivity {
     @Inject
     Retrofit retrofit;
     @BindView(R.id.splash_progress_bar)
-    ProgressBar splashProgressBar;
+    BallSpinFadeLoaderIndicator splashProgressBar;
     Vector<ContentValues> vector = new Vector<>();
     ShowsOpenHelper showsOpenHelper;
     SQLiteDatabase sqLiteDatabase;
-    private Observable<PopularPageResult> pageResultObservable;
+    Observable<PopularPageResult> pageResultObservable;
     private List<Result> resultList;
     private List<VideoDetailResult> videoDetailResults;
-    private Uri uri, backDropUri, updateUri;
+    private Uri uri, backDropUri;
     private String trailerUrl, title, firstAirDate, overview, poster, backDropPath;
     private Double voteAverage;
     private ContentValues popularShowsValues;
@@ -172,21 +173,24 @@ public class SplashActivity extends AppCompatActivity {
                     trailerUrl = getString(R.string.trailer_not_available_error);
                 }
                 Log.d(TAG, "Trailer " + trailerUrl);
-                popularShowsValues = new ContentValues();
-                popularShowsValues.put(ShowContract.PopularShows.COLUMN_ID, id);
-                popularShowsValues.put(ShowContract.PopularShows.COLUMN_TITLE, title);
-                popularShowsValues.put(ShowContract.PopularShows.COLUMN_POSTER, poster);
-                popularShowsValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW, overview);
-                popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailerUrl);
-                popularShowsValues
-                        .put(ShowContract.PopularShows.COLUMN_RELEASE_DATE, firstAirDate);
-                popularShowsValues
-                        .put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE, voteAverage);
-                popularShowsValues
-                        .put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG, backDropPath);
-                long pos = sqLiteDatabase.insert(ShowContract.PopularShows.TABLE_NAME, null, popularShowsValues);
-                Log.d(TAG, "Changed " + pos + " FOR ID " + id);
+            } else {
+                trailerUrl = getString(R.string.trailer_not_available_error);
             }
+            popularShowsValues = new ContentValues();
+            popularShowsValues.put(ShowContract.PopularShows.COLUMN_ID, id);
+            popularShowsValues.put(ShowContract.PopularShows.COLUMN_TITLE, title);
+            popularShowsValues.put(ShowContract.PopularShows.COLUMN_POSTER, poster);
+            popularShowsValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW, overview);
+            popularShowsValues.put(ShowContract.PopularShows.COLUMN_TRAILER, trailerUrl);
+            popularShowsValues
+                    .put(ShowContract.PopularShows.COLUMN_RELEASE_DATE, firstAirDate);
+            popularShowsValues
+                    .put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE, voteAverage);
+            popularShowsValues
+                    .put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG, backDropPath);
+            long pos = sqLiteDatabase.insert(ShowContract.PopularShows.TABLE_NAME,
+                    null, popularShowsValues);
+            Log.d(TAG, "Changed " + pos + " FOR ID " + id);
         }).execute(Integer.parseInt(id));
     }
 
@@ -205,7 +209,7 @@ public class SplashActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onLaunchMessageEvent(LaunchMessageEvent launchMessageEvent) {
-        splashProgressBar.setVisibility(View.GONE);
+        splashProgressBar.setVisible(false, false);
         startActivity(new Intent(getApplicationContext(), MainActivity.class));
     }
 }

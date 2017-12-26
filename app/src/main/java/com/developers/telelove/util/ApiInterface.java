@@ -1,5 +1,6 @@
 package com.developers.telelove.util;
 
+import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 
@@ -23,5 +24,8 @@ public interface ApiInterface {
     Observable<VideoResult> getTrailers(@Path("tv_id") int id,
                                         @Query("api_key") String apiKey);
 
+    @GET("{tv_id}/credits")
+    Observable<CharacterResult> getCrew(@Path("tv_id") int tvId,
+                                        @Query("api_key") String key);
 
 }

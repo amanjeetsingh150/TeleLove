@@ -4,7 +4,7 @@
     android:id="@+id/recyclerview_element"
     android:layout_width="match_parent"
     android:layout_height="300dp"
-    android:layout_margin="@dimen/margin_small"
+    android:layout_margin="3dp"
     app:cardCornerRadius="@dimen/cardview_default_radius"
     app:cardElevation="@dimen/cardview_default_elevation">
 
