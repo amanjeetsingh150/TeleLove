@@ -69,7 +69,6 @@ public class SplashActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     @Inject
     Retrofit retrofit;
-    @BindView(R.id.splash_progress_bar)
     BallSpinFadeLoaderIndicator splashProgressBar;
     Vector<ContentValues> vector = new Vector<>();
     ShowsOpenHelper showsOpenHelper;
@@ -88,6 +87,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         showsOpenHelper = new ShowsOpenHelper(getApplicationContext());
         sqLiteDatabase = showsOpenHelper.getWritableDatabase();
+        splashProgressBar=new BallSpinFadeLoaderIndicator();
         ButterKnife.bind(this);
         ((App) getApplication()).getNetComponent().inject(this);
         if (sharedPreferences.getBoolean(firstRun, true)) {

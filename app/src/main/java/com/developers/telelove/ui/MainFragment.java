@@ -277,7 +277,7 @@ public class MainFragment extends Fragment implements
             sharedPreferences.edit()
                     .putBoolean(getString(R.string.page_key_preference), true).apply();
             //fetch characters, similar,trailer
-            fetchDetails(result.getId());
+            //fetchDetails(result.getId());
             startActivity(intent);
 
         } else {
