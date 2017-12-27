@@ -1,9 +1,11 @@
 package com.developers.telelove.ui;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,9 +30,14 @@ import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
 import com.developers.telelove.adapters.PopularTvShowsAdapter;
 import com.developers.telelove.data.ShowContract;
+import com.developers.telelove.data.ShowsOpenHelper;
+import com.developers.telelove.model.CharactersModel.Cast;
+import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
 import com.developers.telelove.model.PopularShowsModel.Result;
+import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
+import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
 import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
@@ -76,7 +83,7 @@ public class MainFragment extends Fragment implements
     PaginationScrollListener scrollListener;
     LinearLayoutManager linearLayoutManager;
     List<Result> results;
-    String popularShowsJson, resultJson;
+    String popularShowsJson, resultJson, similarShowsResult, characterJson;
     Gson gson;
     int last;
     @BindView(R.id.frame_layout_list)
@@ -87,6 +94,9 @@ public class MainFragment extends Fragment implements
     private List<Result> resultList = new ArrayList<>();
     private List<PopularResultData> popularResultList = new ArrayList<>();
     private String trailer;
+    private List<Cast> castList, castDetailResult;
+    private List<SimilarShowDetails> similarShowDetails, similarShowDetailInfo;
+    private PopularResultData popularResultData;
 
 
     public MainFragment() {
@@ -269,20 +279,23 @@ public class MainFragment extends Fragment implements
         gson = new Gson();
         if (position >= last) {
             //Send results
+            popularResultData = new PopularResultData();
+            popularResultData.setId(result.getId());
+            popularResultData.setTitle(result.getName());
+            popularResultData.setPosterPath(result.getPosterPath());
+            popularResultData.setReleaseDate(result.getFirstAirDate());
+            popularResultData.setRating(String.valueOf(result.getVoteAverage()));
+            popularResultData.setOverview(result.getOverview());
+            popularResultData.setBackDropImagePath(result.getBackdropPath());
             Log.d(TAG, "On page greater than 1");
-            resultJson = gson.toJson(result);
-            Log.d(TAG, resultJson);
-            Intent intent = new Intent(getActivity(), DetailActivity.class);
-            intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
             sharedPreferences.edit()
                     .putBoolean(getString(R.string.page_key_preference), true).apply();
             //fetch characters, similar,trailer
-            //fetchDetails(result.getId());
-            startActivity(intent);
-
+            //Don't Cache when Page greater than 1
+            fetchDetailsForPageMoreThanOne(result.getId(), popularResultData);
         } else {
             //Send popularResults
-            //For managing cache when offline
+            //which me be cached
             Log.d(TAG, "On page 1");
             sharedPreferences.edit()
                     .putBoolean(getString(R.string.page_key_preference), false).apply();
@@ -294,15 +307,49 @@ public class MainFragment extends Fragment implements
                 }
             }
             Log.d(TAG, "Clicked Trailer" + popularResultDataClicked.getTrailer());
-            popularShowsJson = gson.toJson(popularResultDataClicked);
-            Log.d(TAG, popularShowsJson);
-            Intent intent = new Intent(getActivity(), DetailActivity.class);
-            intent.putExtra(Constants.KEY_POPULAR_SHOWS, popularShowsJson);
-            startActivity(intent);
+            //if popular ResultData clicked exist in DB show from there
+            //otherwise hit API to getCrew and getSimilar Shows
+            //And insert them in DB on completion
+            String projections[] = {ShowContract.PopularShows._ID,
+                    ShowContract.PopularShows.COLUMN_ID,
+                    ShowContract.PopularShows.COLUMN_POSTER,
+                    ShowContract.PopularShows.COLUMN_TITLE,
+                    ShowContract.PopularShows.COLUMN_RELEASE_DATE,
+                    ShowContract.PopularShows.COLUMN_VOTE_AVERAGE,
+                    ShowContract.PopularShows.COLUMN_OVERVIEW,
+                    ShowContract.PopularShows.COLUMN_TRAILER,
+                    ShowContract.PopularShows.COLUMN_BACKDROP_IMG,
+                    ShowContract.PopularShows.COLUMN_CHARACTERS,
+                    ShowContract.PopularShows.COLUMN_SIMILAR_SHOWS};
+            Cursor cursorForClickedId = getActivity().getContentResolver()
+                    .query(ShowContract.PopularShows.uri, projections,
+                            ShowContract.PopularShows.COLUMN_ID + " =?",
+                            new String[]{String.valueOf(popularResultDataClicked.getId())},
+                            null);
+            if (cursorForClickedId != null) {
+                cursorForClickedId.moveToFirst();
+                String characters = cursorForClickedId.getString(cursorForClickedId
+                        .getColumnIndex(ShowContract.PopularShows.COLUMN_CHARACTERS));
+                String similarShows = cursorForClickedId.getString(cursorForClickedId
+                        .getColumnIndex(ShowContract.PopularShows.COLUMN_SIMILAR_SHOWS));
+                if (!(characters == null && similarShows == null)) {
+                    //Record exist fetch from DB
+                    Log.d(TAG, "Exist in DB");
+                    //Fetching from DB
+
+                } else {
+                    Log.d(TAG, "Fetch for page 1");
+                    fetchDetailsForPageOne(popularResultDataClicked.getId(),
+                            popularResultDataClicked);
+                }
+                cursorForClickedId.close();
+            } else {
+                Log.d(TAG, "Cursor Null");
+            }
         }
     }
 
-    private void fetchDetails(Integer id) {
+    private void fetchDetailsForPageMoreThanOne(Integer id, PopularResultData popularResultData) {
         videoResultObservable = retrofit
                 .create(ApiInterface.class).getTrailers(id, BuildConfig.TV_KEY);
         videoResultObservable.subscribeOn(Schedulers.io())
@@ -333,8 +380,123 @@ public class MainFragment extends Fragment implements
                             trailer = getActivity()
                                     .getString(R.string.trailer_not_available_error);
                         }
+                        popularResultData.setTrailer(trailer);
                     }
-                    return retrofit.create(ApiInterface.class).getCrew(id, BuildConfig.TV_KEY);
-                });
+                    return retrofit.create(ApiInterface.class).getCrew(id, BuildConfig.TV_KEY)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread());
+                }).concatMap(crewResult -> {
+            castList = crewResult.getCast();
+            String castListJson = gson.toJson(castList);
+            popularResultData.setCharacters(castListJson);
+            return retrofit.create(ApiInterface.class).getSimilarShows(id, BuildConfig.TV_KEY)
+                    .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+        }).subscribe(new Observer<SimilarShowResults>() {
+
+            Disposable disposable;
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                disposable = d;
+            }
+
+            @Override
+            public void onNext(SimilarShowResults similarShowResults) {
+                similarShowDetails = similarShowResults.getResults();
+                String similarShowsJson = gson.toJson(similarShowDetails);
+                popularResultData.setSimilarShows(similarShowsJson);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+                Log.d(TAG, e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+                if (!(disposable.isDisposed())) {
+                    disposable.dispose();
+                }
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                String detailsJson = gson.toJson(popularResultData);
+                intent.putExtra(Constants.KEY_POPULAR_SHOWS, detailsJson);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void fetchDetailsForPageOne(int id, PopularResultData popularResultData) {
+        Log.d(TAG, "Fetching for 1");
+        Observable<CharacterResult> characterResultObservable =
+                retrofit.create(ApiInterface.class).getCrew(id, BuildConfig.TV_KEY);
+        characterResultObservable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(crewResults -> {
+                    castDetailResult = crewResults.getCast();
+                    Log.d(TAG, " Char for Page 1 " + castDetailResult.get(0).getCharacter());
+                    characterJson = gson.toJson(castDetailResult);
+                    popularResultData.setCharacters(characterJson);
+                    return retrofit.create(ApiInterface.class)
+                            .getSimilarShows(id, BuildConfig.TV_KEY)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread());
+                }).subscribe(new Observer<SimilarShowResults>() {
+
+            Disposable disposable;
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                disposable = d;
+            }
+
+            @Override
+            public void onNext(SimilarShowResults similarShowResults) {
+                similarShowDetailInfo = similarShowResults.getResults();
+                similarShowsResult = gson.toJson(similarShowDetailInfo);
+                Log.d(TAG, "Similar for Page 1" + similarShowsResult);
+                popularResultData.setSimilarShows(similarShowsResult);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                popularShowsJson = gson.toJson(popularResultData);
+                intent.putExtra(Constants.KEY_POPULAR_SHOWS, popularShowsJson);
+                Log.d(TAG, popularShowsJson);
+                insertCrewAndSimilarShows(similarShowsResult, characterJson, popularResultData);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void insertCrewAndSimilarShows(String similarShowsResult,
+                                           String characterJson,
+                                           PopularResultData popularResultData) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(ShowContract.PopularShows.COLUMN_ID, popularResultData.getId());
+        contentValues.put(ShowContract.PopularShows.COLUMN_TITLE, popularResultData.getTitle());
+        contentValues.put(ShowContract.PopularShows.COLUMN_POSTER
+                , popularResultData.getPosterPath());
+        contentValues.put(ShowContract.PopularShows.COLUMN_RELEASE_DATE,
+                popularResultData.getReleaseDate());
+        contentValues.put(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE,
+                popularResultData.getRating());
+        contentValues.put(ShowContract.PopularShows.COLUMN_OVERVIEW, popularResultData.getOverview());
+        contentValues.put(ShowContract.PopularShows.COLUMN_TRAILER, popularResultData.getTrailer());
+        contentValues.put(ShowContract.PopularShows.COLUMN_BACKDROP_IMG,
+                popularResultData.getBackDropImagePath());
+        contentValues.put(ShowContract.PopularShows.COLUMN_SIMILAR_SHOWS,
+                similarShowsResult);
+        contentValues.put(ShowContract.PopularShows.COLUMN_CHARACTERS, characterJson);
+        getActivity().getContentResolver().update(ShowContract.PopularShows.uri,
+                contentValues, ShowContract.PopularShows.COLUMN_ID + " =?",
+                new String[]{String.valueOf(popularResultData.getId())});
+        Log.d(TAG, "Loaded DATA");
     }
 }

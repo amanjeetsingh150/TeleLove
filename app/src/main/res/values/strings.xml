@@ -9,4 +9,6 @@
     <string name="no_internet_connection">No internet Connectivity. Please connect and try again</string>
     <string name="trailer_not_available_error">Trailer not available</string>
     <string name="page_key_preference">page</string>
+    <string name="character_text">Characters:</string>
+    <string name="similar_shows_text">Similar Shows</string>
 </resources>

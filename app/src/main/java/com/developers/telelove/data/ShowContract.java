@@ -33,6 +33,8 @@ public class ShowContract {
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_TRAILER = "trailer";
         public static final String COLUMN_BACKDROP_IMG = "backdrop";
+        public static final String COLUMN_SIMILAR_SHOWS = "similar_shows";
+        public static final String COLUMN_CHARACTERS = "characters";
         public static final String[] projectionsForMainActivity =
                 {PopularShows._ID, PopularShows.COLUMN_ID, PopularShows.COLUMN_POSTER,
                         PopularShows.COLUMN_TITLE, PopularShows.COLUMN_RELEASE_DATE,

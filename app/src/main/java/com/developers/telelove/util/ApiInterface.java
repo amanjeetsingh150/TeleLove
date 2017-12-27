@@ -2,6 +2,7 @@ package com.developers.telelove.util;
 
 import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
+import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
 import com.developers.telelove.model.VideosModel.VideoResult;
 
 import io.reactivex.Observable;
@@ -27,5 +28,9 @@ public interface ApiInterface {
     @GET("{tv_id}/credits")
     Observable<CharacterResult> getCrew(@Path("tv_id") int tvId,
                                         @Query("api_key") String key);
+
+    @GET("{tv_id}/similar")
+    Observable<SimilarShowResults> getSimilarShows(@Path("tv_id") int showId,
+                                                   @Query("api_key") String key);
 
 }

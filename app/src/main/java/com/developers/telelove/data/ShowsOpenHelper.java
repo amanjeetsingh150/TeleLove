@@ -21,7 +21,9 @@ public class ShowsOpenHelper extends SQLiteOpenHelper {
             ShowContract.PopularShows.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
             ShowContract.PopularShows.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
             ShowContract.PopularShows.COLUMN_TRAILER + " TEXT," +
-            ShowContract.PopularShows.COLUMN_BACKDROP_IMG + " TEXT NOT NULL" + ")";
+            ShowContract.PopularShows.COLUMN_BACKDROP_IMG + " TEXT NOT NULL," +
+            ShowContract.PopularShows.COLUMN_SIMILAR_SHOWS + " TEXT, " +
+            ShowContract.PopularShows.COLUMN_CHARACTERS + " TEXT" + ")";
 
     public ShowsOpenHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);

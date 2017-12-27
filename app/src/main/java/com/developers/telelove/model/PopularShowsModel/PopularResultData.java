@@ -33,7 +33,28 @@ public class PopularResultData {
     @SerializedName("trailer_path")
     @Expose
     private String trailer;
+    @SerializedName("similar_shows")
+    @Expose
+    private String similarShows;
+    @SerializedName("characters")
+    @Expose
+    private String characters;
 
+    public String getSimilarShows() {
+        return similarShows;
+    }
+
+    public void setSimilarShows(String similarShows) {
+        this.similarShows = similarShows;
+    }
+
+    public String getCharacters() {
+        return characters;
+    }
+
+    public void setCharacters(String characters) {
+        this.characters = characters;
+    }
 
     public Integer getId() {
         return id;
