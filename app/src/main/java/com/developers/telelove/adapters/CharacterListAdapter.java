@@ -1,8 +1,13 @@
 package com.developers.telelove.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +18,9 @@ import android.widget.TextView;
 import com.developers.telelove.R;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.util.Constants;
-import com.squareup.picasso.Callback;
+import com.jackandphantom.blurimage.BlurImage;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.List;
 
@@ -47,19 +53,29 @@ public class CharacterListAdapter extends RecyclerView.Adapter<CharacterListAdap
     public void onBindViewHolder(CharacterViewHolder holder, int position) {
         Uri charImageUri = Uri.parse(Constants.BASE_URL_IMAGES)
                 .buildUpon().appendEncodedPath(castList.get(position).getProfilePath()).build();
-        Picasso.with(context).load(charImageUri).into(holder.castImage,
-                new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        holder.characterProgressBar.setVisibility(View.GONE);
-                    }
+        Log.d("IMAGE ", charImageUri.toString() + " 0------"+castList.get(position).getCharacter());
+        Picasso.with(context).load(charImageUri).into(new Target() {
 
-                    @Override
-                    public void onError() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                holder.castImage.setImageBitmap(bitmap);
+                Palette palette = Palette.from(bitmap).generate();
+                int color = palette.getMutedColor(0xFF333333);
+                holder.cardView.setBackgroundColor(color);
+                holder.characterProgressBar.setVisibility(View.GONE);
+            }
 
-                    }
-                });
-        holder.nameTextView.setText(castList.get(position).getName());
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                Log.d("errr", "ERRORRRRRR "+charImageUri);
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+            }
+        });
+        holder.nameTextView.setText(castList.get(position).getCharacter());
     }
 
     @Override
@@ -75,6 +91,8 @@ public class CharacterListAdapter extends RecyclerView.Adapter<CharacterListAdap
         TextView nameTextView;
         @BindView(R.id.character_progress_bar)
         ProgressBar characterProgressBar;
+        @BindView(R.id.card_view)
+        CardView cardView;
 
         public CharacterViewHolder(View itemView) {
             super(itemView);

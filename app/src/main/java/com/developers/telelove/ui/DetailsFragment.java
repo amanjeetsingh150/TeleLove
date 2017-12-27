@@ -21,8 +21,10 @@ import android.widget.TextView;
 import com.developers.telelove.App;
 import com.developers.telelove.R;
 import com.developers.telelove.adapters.CharacterListAdapter;
+import com.developers.telelove.adapters.SimilarShowsAdapter;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
+import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
 import com.developers.telelove.util.Constants;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.google.gson.Gson;
@@ -63,6 +65,10 @@ public class DetailsFragment extends Fragment {
     RecyclerView characterRecyclerView;
     Gson gson;
     boolean pageGreaterThanOne;
+    SimilarShowsAdapter similarShowsAdapter;
+    @BindView(R.id.similar_shows_recycler_view)
+    RecyclerView similarShowsRecyclerView;
+    LinearLayoutManager characterLayoutManager, similarShowLayoutManager;
     private PopularResultData popularResultData;
     private CharacterListAdapter characterListAdapter;
 
@@ -138,10 +144,19 @@ public class DetailsFragment extends Fragment {
                 new TypeToken<List<Cast>>() {
                 }.getType());
         characterListAdapter = new CharacterListAdapter(getActivity(), castList);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        characterRecyclerView.setLayoutManager(linearLayoutManager);
+        characterLayoutManager = new LinearLayoutManager(getActivity());
+        characterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        characterRecyclerView.setLayoutManager(characterLayoutManager);
         characterRecyclerView.setAdapter(characterListAdapter);
+        String similarShowJson = popularResultData.getSimilarShows();
+        List<SimilarShowDetails> similarShowDetails = gson.fromJson(similarShowJson,
+                new TypeToken<List<SimilarShowDetails>>() {
+                }.getType());
+        similarShowsAdapter = new SimilarShowsAdapter(getActivity(), similarShowDetails);
+        similarShowLayoutManager = new LinearLayoutManager(getActivity());
+        similarShowLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        similarShowsRecyclerView.setLayoutManager(similarShowLayoutManager);
+        similarShowsRecyclerView.setAdapter(similarShowsAdapter);
         return view;
     }
 

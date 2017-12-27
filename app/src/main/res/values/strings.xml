@@ -10,5 +10,5 @@
     <string name="trailer_not_available_error">Trailer not available</string>
     <string name="page_key_preference">page</string>
     <string name="character_text">Characters:</string>
-    <string name="similar_shows_text">Similar Shows</string>
+    <string name="similar_shows_text">Similar Shows:</string>
 </resources>

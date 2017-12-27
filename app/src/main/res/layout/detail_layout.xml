@@ -6,10 +6,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        app:layout_collapseMode="pin">
 
 
         <FrameLayout
@@ -20,9 +20,11 @@
 
             <ImageView
                 android:id="@+id/poster_image_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="140dp"
+                android:layout_height="184dp"
                 android:layout_margin="5dp"
+                android:elevation="4dp"
+                android:scaleType="centerCrop"
                 android:contentDescription="@string/description_detail_poster" />
 
             <ProgressBar
@@ -34,8 +36,11 @@
         </FrameLayout>
 
         <LinearLayout
+            android:id="@+id/info_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/poster_image_view_container"
+            android:layout_toEndOf="@+id/poster_image_view_container"
             android:orientation="vertical">
 
             <TextView
@@ -83,7 +88,7 @@
                 app:mfb_rotation_duration="400"
                 app:mfb_type="star" />
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
 
     <TextView
@@ -111,8 +116,8 @@
             android:fontFamily="serif"
             android:text="@string/character_text"
             android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
             android:textSize="18sp"
+            android:textStyle="bold"
             tools:text="Characters:" />
 
         <android.support.v7.widget.RecyclerView
@@ -128,9 +133,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:fontFamily="serif"
+            android:textStyle="bold"
             android:text="@string/similar_shows_text"
-            android:textColor="@android:color/black"
-            android:textSize="15sp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
             tools:text="Similar Shows:" />
 
         <android.support.v7.widget.RecyclerView
