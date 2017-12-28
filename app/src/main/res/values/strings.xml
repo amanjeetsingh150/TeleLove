@@ -36,4 +36,5 @@
         </item>
     </string-array>
     <string name="preferences_key">order</string>
+    <string name="sort_by">Sort By</string>
 </resources>

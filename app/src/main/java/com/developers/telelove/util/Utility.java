@@ -25,14 +25,6 @@ public class Utility {
 
     }
 
-    public static boolean validateUriForAppending(String path) {
-        Character character = path.charAt(0);
-        if (character.equals('/')) {
-            return true;
-        }
-        return false;
-    }
-
     public interface ClickCallBacks {
         void onClick(Result result, int position);
     }

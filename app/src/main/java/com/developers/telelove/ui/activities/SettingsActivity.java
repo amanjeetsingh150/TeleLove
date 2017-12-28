@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.developers.telelove.App;
 import com.developers.telelove.R;
 import com.developers.telelove.ui.MainFragment;
 
@@ -32,6 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            ((App) getActivity().getApplication()).getNetComponent().inject(this);
             addPreferencesFromResource(R.xml.settings_activity);
             bindPreference(findPreference(getString(R.string.preferences_key)));
         }

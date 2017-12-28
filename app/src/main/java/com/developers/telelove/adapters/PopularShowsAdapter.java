@@ -1,6 +1,5 @@
 package com.developers.telelove.adapters;
 
-import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -23,12 +22,9 @@ import com.developers.telelove.R;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.util.Constants;
 import com.developers.telelove.util.Utility;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -38,23 +34,21 @@ import butterknife.ButterKnife;
  * Created by Amanjeet Singh on 23/12/17.
  */
 
-public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PopularShowsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public static final int ITEM = 0;
     public static final int LOADING = 1;
-    private static final String TAG = PopularTvShowsAdapter.class.getSimpleName();
+    private static final String TAG = PopularShowsAdapter.class.getSimpleName();
     Utility.ClickCallBacks clickCallBacks;
     private Context context;
     private List<Result> resultList;
-    private int page;
     private String uri;
     private Uri backDropUri;
     private boolean isLoadingItemAdded = false;
 
-    public PopularTvShowsAdapter(Context context, List<Result> resultList, int page) {
+    public PopularShowsAdapter(Context context, List<Result> resultList) {
         this.context = context;
         this.resultList = resultList;
-        this.page = page;
     }
 
     @Override
@@ -79,26 +73,14 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         switch (getItemViewType(position)) {
             case ITEM:
                 uri = resultList.get(position).getBackdropPath();
-                if (Utility.validateUriForAppending(uri)) {
-                    //Required to build Uri
-                    backDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                            .appendEncodedPath(uri).build();
-                    //load without cache because we do not want large number of image to be in cache
-                    loadWithoutCache(backDropUri, holder);
-                } else {
-                    //load with cache
-                    loadWithCache(resultList.get(position).getBackdropPath(), holder);
-                }
+                backDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                        .appendEncodedPath(uri).build();
+                loadWithoutCache(backDropUri, holder);
                 ((PopularTvViewHolder) holder).popularShowTitle
                         .setText(resultList.get(position).getName());
-                ((PopularTvViewHolder) holder).popularShowImage.setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                clickCallBacks.onClick(resultList.get(position), position);
-                            }
-                        }
-                );
+                ((PopularTvViewHolder) holder).popularShowImage.setOnClickListener(v -> {
+                    clickCallBacks.onClick(resultList.get(position), position);
+                });
                 break;
             case LOADING:
                 if (!Utility.isNetworkConnected(context)) {
@@ -173,31 +155,6 @@ public class PopularTvShowsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
                 Log.d(TAG, "Failed to load");
-            }
-
-            @Override
-            public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-            }
-        });
-    }
-
-    private void loadWithCache(String imageUrl, final RecyclerView.ViewHolder holder) {
-        Log.d(TAG, " With cache " + imageUrl);
-        App.picassoWithCache.with(context).load(imageUrl).into(new Target() {
-
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                Palette palette = Palette.from(bitmap).generate();
-                ((PopularTvViewHolder) holder).popularShowImage.setImageBitmap(bitmap);
-                ((PopularTvViewHolder) holder).progressBar.setVisibility(View.GONE);
-                int color = palette.getMutedColor(0xFF333333);
-                ((PopularTvViewHolder) holder).popularCardViewElement.setBackgroundColor(color);
-            }
-
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                Log.d(TAG, "Failed");
             }
 
             @Override

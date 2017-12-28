@@ -19,12 +19,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.developers.telelove.App;
+import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
 import com.developers.telelove.adapters.CharacterListAdapter;
 import com.developers.telelove.adapters.SimilarShowsAdapter;
 import com.developers.telelove.model.CharactersModel.Cast;
+import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
+import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
+import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
+import com.developers.telelove.model.VideosModel.VideoResult;
+import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.google.gson.Gson;
@@ -38,13 +44,19 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.Retrofit;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class DetailsFragment extends Fragment {
 
-    String detailsJson;
+    String detailsJson, preference;
     @Inject
     SharedPreferences sharedPreferences;
     @BindView(R.id.poster_image_view)
@@ -64,13 +76,20 @@ public class DetailsFragment extends Fragment {
     @BindView(R.id.character_recycler_view)
     RecyclerView characterRecyclerView;
     Gson gson;
+    @Inject
+    Retrofit retrofit;
     boolean pageGreaterThanOne;
     SimilarShowsAdapter similarShowsAdapter;
     @BindView(R.id.similar_shows_recycler_view)
     RecyclerView similarShowsRecyclerView;
     LinearLayoutManager characterLayoutManager, similarShowLayoutManager;
-    private PopularResultData popularResultData;
+    Observable<VideoResult> videoResultObservable;
+    Observable<CharacterResult> characterResultObservable;
+    Observable<SimilarShowResults> similarShowResultsObservable;
+    List<SimilarShowDetails> similarShowDetails;
+    private Result popularResultData;
     private CharacterListAdapter characterListAdapter;
+    private List<Cast> castList;
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -79,10 +98,16 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((App) getActivity().getApplication()).getNetComponent().inject(this);
         Bundle bundle = getArguments();
         detailsJson = bundle.getString(Constants.KEY_DETAILS);
         gson = new Gson();
-        popularResultData = gson.fromJson(detailsJson, PopularResultData.class);
+        preference=sharedPreferences.getString(getActivity().getString(R.string.preferences_key),
+                "0");
+        switch (preference) {
+            case "0":
+                popularResultData = gson.fromJson(detailsJson, Result.class);
+        }
     }
 
     @Override
@@ -91,73 +116,83 @@ public class DetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, view);
-        ((App) getActivity().getApplication()).getNetComponent().inject(this);
         pageGreaterThanOne = sharedPreferences
                 .getBoolean(getActivity().getString(R.string.page_key_preference), false);
-        if (pageGreaterThanOne) {
-            Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                    .appendEncodedPath(popularResultData.getPosterPath()).build();
-            Picasso.with(getActivity()).load(posterUri.toString())
-                    .into(posterImageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            progressBar.setVisibility(View.GONE);
-                        }
+        Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                .appendEncodedPath(popularResultData.getPosterPath()).build();
+        Picasso.with(getActivity()).load(posterUri.toString())
+                .into(posterImageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        progressBar.setVisibility(View.GONE);
+                    }
 
-                        @Override
-                        public void onError() {
+                    @Override
+                    public void onError() {
 
-                        }
-                    });
-
-            Uri backDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
-                    .buildUpon().appendEncodedPath(popularResultData.getBackDropImagePath())
-                    .build();
-            Picasso.with(getActivity()).load(backDropUri.toString())
-                    .into(backDropImage);
-        } else {
-
-            Picasso.with(getActivity()).load(popularResultData.getPosterPath())
-                    .into(posterImageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            progressBar.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onError() {
-
-                        }
-                    });
-            Picasso.with(getActivity()).load(popularResultData.getBackDropImagePath())
-                    .into(backDropImage);
-        }
-        titleTextView.setText(popularResultData.getTitle());
+                    }
+                });
+        Uri backDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
+                .buildUpon().appendEncodedPath(popularResultData.getBackdropPath())
+                .build();
+        Picasso.with(getActivity()).load(backDropUri.toString())
+                .into(backDropImage);
+        fetchDetailsForPageMoreThanOne(popularResultData.getId());
+        titleTextView.setText(popularResultData.getName());
         overviewTextView.setText(popularResultData.getOverview());
-        ratingText.setText(popularResultData.getRating());
+        ratingText.setText(String.valueOf(popularResultData.getVoteAverage()));
         materialFavoriteButton.setOnClickListener((v) -> {
             Snackbar.make(v, "Added to favorites", Snackbar.LENGTH_SHORT).show();
             materialFavoriteButton.setAnimateFavorite(true);
         });
-        String charactersJson = popularResultData.getCharacters();
-        List<Cast> castList = gson.fromJson(charactersJson,
-                new TypeToken<List<Cast>>() {
-                }.getType());
-        characterListAdapter = new CharacterListAdapter(getActivity(), castList);
-        characterLayoutManager = new LinearLayoutManager(getActivity());
-        characterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        characterRecyclerView.setLayoutManager(characterLayoutManager);
-        characterRecyclerView.setAdapter(characterListAdapter);
-        String similarShowJson = popularResultData.getSimilarShows();
-        List<SimilarShowDetails> similarShowDetails = gson.fromJson(similarShowJson,
-                new TypeToken<List<SimilarShowDetails>>() {
-                }.getType());
-        similarShowsAdapter = new SimilarShowsAdapter(getActivity(), similarShowDetails);
-        similarShowLayoutManager = new LinearLayoutManager(getActivity());
-        similarShowLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        similarShowsRecyclerView.setLayoutManager(similarShowLayoutManager);
-        similarShowsRecyclerView.setAdapter(similarShowsAdapter);
         return view;
     }
+
+    private void fetchDetailsForPageMoreThanOne(Integer id) {
+        characterResultObservable = retrofit.create(ApiInterface.class)
+                .getCrew(id, BuildConfig.TV_KEY);
+        characterResultObservable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(characterResult -> {
+                    castList = characterResult.getCast();
+                    return retrofit.create(ApiInterface.class).getSimilarShows(id, BuildConfig.TV_KEY)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread());
+                }).subscribe(new Observer<SimilarShowResults>() {
+
+
+            Disposable disposable;
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                disposable = d;
+            }
+
+            @Override
+            public void onNext(SimilarShowResults similarShowResults) {
+                similarShowDetails = similarShowResults.getResults();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                characterListAdapter = new CharacterListAdapter(getActivity(), castList);
+                characterLayoutManager = new LinearLayoutManager(getActivity());
+                characterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                characterRecyclerView.setLayoutManager(characterLayoutManager);
+                characterRecyclerView.setAdapter(characterListAdapter);
+                similarShowsAdapter = new SimilarShowsAdapter(getActivity(), similarShowDetails);
+                similarShowLayoutManager = new LinearLayoutManager(getActivity());
+                similarShowLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                similarShowsRecyclerView.setLayoutManager(similarShowLayoutManager);
+                similarShowsRecyclerView.setAdapter(similarShowsAdapter);
+            }
+        });
+    }
+
 
 }
