@@ -1,9 +1,10 @@
-package com.developers.telelove.ui;
+package com.developers.telelove.ui.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.developers.telelove.R;
+import com.developers.telelove.ui.DetailsFragment;
 import com.developers.telelove.util.Constants;
 
 public class DetailActivity extends AppCompatActivity {

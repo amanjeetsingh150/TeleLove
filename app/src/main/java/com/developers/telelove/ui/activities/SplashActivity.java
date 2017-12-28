@@ -1,21 +1,13 @@
-package com.developers.telelove.ui;
+package com.developers.telelove.ui.activities;
 
-import android.app.Application;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
 
 import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
@@ -25,38 +17,29 @@ import com.developers.telelove.data.ShowsOpenHelper;
 import com.developers.telelove.events.LaunchMessageEvent;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.PopularShowsModel.Result;
+import com.developers.telelove.model.TopRatedShowsModel.TopRatedDetailResults;
+import com.developers.telelove.model.TopRatedShowsModel.TopRatedResults;
 import com.developers.telelove.model.VideosModel.VideoDetailResult;
-import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
 import com.developers.telelove.util.FetchVideos;
 import com.developers.telelove.util.Utility;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.wang.avi.indicators.BallSpinFadeLoaderIndicator;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
 import javax.inject.Inject;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
@@ -74,12 +57,16 @@ public class SplashActivity extends AppCompatActivity {
     ShowsOpenHelper showsOpenHelper;
     SQLiteDatabase sqLiteDatabase;
     Observable<PopularPageResult> pageResultObservable;
+    Observable<TopRatedResults> topRatedResultsObservable;
     private List<Result> resultList;
     private List<VideoDetailResult> videoDetailResults;
-    private Uri uri, backDropUri;
+    private Uri uri, backDropUri, topRatedBackDropUri, topRatedPosterUri;
+    private String topRatedTrailerUrl, topRatedTitle,
+            topRatedFirstAirDate, topRatedOverview, topRatedPoster, topRatedBackDropPath;
     private String trailerUrl, title, firstAirDate, overview, poster, backDropPath;
     private Double voteAverage;
     private ContentValues popularShowsValues;
+    private List<TopRatedDetailResults> topRatedDetailResultList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,14 +74,60 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         showsOpenHelper = new ShowsOpenHelper(getApplicationContext());
         sqLiteDatabase = showsOpenHelper.getWritableDatabase();
-        splashProgressBar=new BallSpinFadeLoaderIndicator();
+        splashProgressBar = new BallSpinFadeLoaderIndicator();
         ButterKnife.bind(this);
         ((App) getApplication()).getNetComponent().inject(this);
         if (sharedPreferences.getBoolean(firstRun, true)) {
             getPopularShowsFromApi(FIRST_PAGE);
+            getTopRatedShowsApi(FIRST_PAGE);
         } else {
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
         }
+    }
+
+    private void getTopRatedShowsApi(int firstPage) {
+        topRatedResultsObservable = retrofit.create(ApiInterface.class)
+                .getTopRatedShows(BuildConfig.TV_KEY, firstPage);
+        topRatedResultsObservable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<TopRatedResults>() {
+
+                    Disposable disposable;
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(TopRatedResults topRatedResults) {
+                        topRatedDetailResultList = topRatedResults.getResults();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if (!disposable.isDisposed()) {
+                            disposable.dispose();
+                        }
+                        for (TopRatedDetailResults topRatedDetailResults : topRatedDetailResultList) {
+                            topRatedTitle = topRatedDetailResults.getName();
+                            topRatedFirstAirDate = topRatedDetailResults.getFirstAirDate();
+                            topRatedPosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                                    .appendEncodedPath(topRatedDetailResults.getPosterPath())
+                                    .build();
+                            topRatedPoster = topRatedPosterUri.toString();
+                            topRatedBackDropUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                                    .appendEncodedPath(topRatedBackDropPath).build();
+                            topRatedBackDropPath = topRatedBackDropUri.toString();
+                            topRatedOverview = topRatedDetailResults.getOverview();
+                        }
+                    }
+                });
     }
 
 

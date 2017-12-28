@@ -3,6 +3,7 @@ package com.developers.telelove.util;
 import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
+import com.developers.telelove.model.TopRatedShowsModel.TopRatedResults;
 import com.developers.telelove.model.VideosModel.VideoResult;
 
 import io.reactivex.Observable;
@@ -20,6 +21,10 @@ public interface ApiInterface {
     @GET("popular")
     Observable<PopularPageResult> getPopularShows(@Query("api_key") String apiKey,
                                                   @Query("page") int page);
+
+    @GET("top_rated")
+    Observable<TopRatedResults> getTopRatedShows(@Query("api_key") String apiKey,
+                                                 @Query("page") int page);
 
     @GET("{tv_id}/videos")
     Observable<VideoResult> getTrailers(@Path("tv_id") int id,

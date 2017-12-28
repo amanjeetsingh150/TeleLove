@@ -11,4 +11,29 @@
     <string name="page_key_preference">page</string>
     <string name="character_text">Characters:</string>
     <string name="similar_shows_text">Similar Shows:</string>
+    <string name="sort_default">0</string>
+    <string name="sort_title">Sort Order</string>
+    <string-array name="sort_name">
+        <item>
+            Most Popular
+        </item>
+        <item>
+            Highest Rated
+        </item>
+        <item>
+            Favourites
+        </item>
+    </string-array>
+    <string-array name="sort_values">
+        <item>
+            0
+        </item>
+        <item>
+            1
+        </item>
+        <item>
+            2
+        </item>
+    </string-array>
+    <string name="preferences_key">order</string>
 </resources>

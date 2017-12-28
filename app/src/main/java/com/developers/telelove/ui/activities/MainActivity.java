@@ -1,4 +1,4 @@
-package com.developers.telelove.ui;
+package com.developers.telelove.ui.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -6,6 +6,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.developers.telelove.App;
 import com.developers.telelove.R;
+import com.developers.telelove.ui.MainFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

@@ -46,4 +46,31 @@ public class ShowContract {
             return ContentUris.withAppendedId(CONTENT_URI, popularId);
         }
     }
+
+    public static final class TopRatedShows implements BaseColumns {
+        public static final Uri uri = CONTENT_URI.buildUpon().appendPath(PATH_TOP_RATED).build();
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_TOP_RATED;
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_TOP_RATED;
+
+        public static final String TABLE_NAME = "top_rated";
+        public static final String COLUMN_ID = "show_id";
+        public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_POSTER = "poster";
+        public static final String COLUMN_RELEASE_DATE = "date";
+        public static final String COLUMN_VOTE_AVERAGE = "average";
+        public static final String COLUMN_OVERVIEW = "overview";
+        public static final String COLUMN_TRAILER = "trailer";
+        public static final String COLUMN_BACKDROP_IMG = "backdrop";
+        public static final String COLUMN_SIMILAR_SHOWS = "similar_shows";
+        public static final String COLUMN_CHARACTERS = "characters";
+        public static final String[] projections =
+                {TopRatedShows._ID, TopRatedShows.COLUMN_ID, TopRatedShows.COLUMN_POSTER,
+                        TopRatedShows.COLUMN_TITLE, TopRatedShows.COLUMN_RELEASE_DATE,
+                        TopRatedShows.COLUMN_VOTE_AVERAGE, TopRatedShows.COLUMN_OVERVIEW,
+                        TopRatedShows.COLUMN_TRAILER, TopRatedShows.COLUMN_BACKDROP_IMG,
+                        TopRatedShows.COLUMN_CHARACTERS, TopRatedShows.COLUMN_SIMILAR_SHOWS};
+
+    }
 }

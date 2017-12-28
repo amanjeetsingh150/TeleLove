@@ -5,20 +5,16 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.support.v4.content.CursorLoader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +26,6 @@ import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
 import com.developers.telelove.adapters.PopularTvShowsAdapter;
 import com.developers.telelove.data.ShowContract;
-import com.developers.telelove.data.ShowsOpenHelper;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
@@ -40,13 +35,13 @@ import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
 import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
+import com.developers.telelove.ui.activities.DetailActivity;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
 import com.developers.telelove.util.PaginationScrollListener;
 import com.developers.telelove.util.Utility;
 import com.google.gson.Gson;
 
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,6 +92,7 @@ public class MainFragment extends Fragment implements
     private List<Cast> castList, castDetailResult;
     private List<SimilarShowDetails> similarShowDetails, similarShowDetailInfo;
     private PopularResultData popularResultData;
+    public static boolean changed=false;
 
 
     public MainFragment() {
@@ -215,6 +211,20 @@ public class MainFragment extends Fragment implements
             initAdapter(resultList, 1);
             progressBar.setVisibility(View.GONE);
             frameLayout.setBackgroundColor(Color.BLACK);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if(Utility.isNetworkConnected(getActivity())){
+            if(changed){
+
+            }
+
+        }
+        else{
+
         }
     }
 

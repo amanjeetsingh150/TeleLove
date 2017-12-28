@@ -3,9 +3,10 @@ package com.developers.telelove.di.component;
 import com.developers.telelove.di.module.AppModule;
 import com.developers.telelove.di.module.NetModule;
 import com.developers.telelove.ui.DetailsFragment;
-import com.developers.telelove.ui.MainActivity;
+import com.developers.telelove.ui.activities.MainActivity;
 import com.developers.telelove.ui.MainFragment;
-import com.developers.telelove.ui.SplashActivity;
+import com.developers.telelove.ui.activities.SettingsActivity;
+import com.developers.telelove.ui.activities.SplashActivity;
 import com.developers.telelove.util.FetchVideos;
 
 import javax.inject.Singleton;
@@ -28,5 +29,7 @@ public interface NetComponent {
     void inject(DetailsFragment detailsFragment);
 
     void inject(FetchVideos fetchVideos);
+
+    void inject(SettingsActivity.PrefFrag prefFrag);
 
 }
