@@ -37,7 +37,6 @@ public class App extends Application {
         picassoWithCache = new Picasso.Builder(this)
                 .downloader(new OkHttp3Downloader(okHttpClientBuilder.build())).build();
         Picasso.setSingletonInstance(picassoWithCache);
-        picassoWithCache.setIndicatorsEnabled(true);
     }
 
     public NetComponent getNetComponent() {
