@@ -34,11 +34,11 @@ public class ShowContract {
         public static final String COLUMN_SIMILAR_SHOWS = "similar_shows";
         public static final String COLUMN_CHARACTERS = "characters";
         public static final String[] projectionsForMainActivity =
-                {FavouriteShows._ID, FavouriteShows.COLUMN_ID, FavouriteShows.COLUMN_POSTER,
-                        FavouriteShows.COLUMN_TITLE, FavouriteShows.COLUMN_RELEASE_DATE,
+                {FavouriteShows.COLUMN_ID, FavouriteShows.COLUMN_TITLE,
+                        FavouriteShows.COLUMN_POSTER, FavouriteShows.COLUMN_RELEASE_DATE,
                         FavouriteShows.COLUMN_VOTE_AVERAGE, FavouriteShows.COLUMN_OVERVIEW,
-                        FavouriteShows.COLUMN_TRAILER, FavouriteShows.COLUMN_BACKDROP_IMG};
-
+                        FavouriteShows.COLUMN_TRAILER, FavouriteShows.COLUMN_BACKDROP_IMG,
+                        FavouriteShows.COLUMN_SIMILAR_SHOWS, FavouriteShows.COLUMN_CHARACTERS};
 
         public static Uri buildFavouriteShowsUri(long favourId) {
             return ContentUris.withAppendedId(CONTENT_URI, favourId);

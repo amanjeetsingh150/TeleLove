@@ -27,11 +27,13 @@ import android.widget.ProgressBar;
 import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
+import com.developers.telelove.adapters.FavouriteShowsAdapter;
 import com.developers.telelove.adapters.PopularShowsAdapter;
 import com.developers.telelove.adapters.TopRatedShowsAdapter;
 import com.developers.telelove.data.ShowContract;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.model.CharactersModel.CharacterResult;
+import com.developers.telelove.model.FavouriteShowsResult;
 import com.developers.telelove.model.PopularShowsModel.PopularPageResult;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
 import com.developers.telelove.model.PopularShowsModel.Result;
@@ -86,7 +88,7 @@ public class MainFragment extends Fragment implements
     Observable<PopularPageResult> pageResultObservable;
     PaginationScrollListener scrollListener;
     LinearLayoutManager linearLayoutManager;
-    List<Result> results;
+    List<FavouriteShowsResult> favouriteShowsResults;
     String resultJson, preference;
     Gson gson;
     int last;
@@ -100,6 +102,7 @@ public class MainFragment extends Fragment implements
     private List<Result> resultList = new ArrayList<>();
     private List<TopRatedDetailResults> ratedDetailResults;
     private List<PopularResultData> popularResultList = new ArrayList<>();
+    private List<FavouriteShowsResult> favouriteShowsResultList;
 
     public MainFragment() {
         // Required empty public constructor
@@ -127,6 +130,10 @@ public class MainFragment extends Fragment implements
                 getTopRatedShowsFromApi(START_PAGE);
                 frameLayout.setBackgroundColor(Color.BLACK);
                 break;
+            case "2":
+                getActivity().getSupportLoaderManager().initLoader(SHOWS_LOADER,
+                        null, this);
+                break;
         }
         showsRecyclerView.setLayoutManager(linearLayoutManager);
         scrollListener = new PaginationScrollListener(linearLayoutManager) {
@@ -134,7 +141,6 @@ public class MainFragment extends Fragment implements
             public void onLoadMore(int current_page) {
                 preference = sharedPreferences.getString(getActivity().getString
                         (R.string.preferences_key), "0");
-                Log.d(TAG,"preference "+current_page +preference);
                 if (Utility.isNetworkConnected(getActivity())) {
                     switch (preference) {
                         case "0":
@@ -151,7 +157,6 @@ public class MainFragment extends Fragment implements
             }
         };
         showsRecyclerView.addOnScrollListener(scrollListener);
-        //getActivity().getSupportLoaderManager().initLoader(SHOWS_LOADER, null, this);
         return view;
     }
 
@@ -275,7 +280,7 @@ public class MainFragment extends Fragment implements
             public void run() {
                 preference = sharedPreferences.getString(getActivity().getString
                         (R.string.preferences_key), "0");
-                switch (preference){
+                switch (preference) {
                     case "0":
                         popularShowsAdapter.addLoadingFooter();
                         break;
@@ -317,131 +322,135 @@ public class MainFragment extends Fragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        preference = sharedPreferences.getString(getActivity()
-                .getString(R.string.preferences_key), "0");
-        switch (preference) {
-            case "0":
-                uri = ShowContract.PopularShows.uri;
-                Log.d(TAG, "URI " + uri);
-                mCursorLoader = new CursorLoader(getActivity(), uri,
-                        ShowContract.PopularShows.projectionsForMainActivity,
-                        null, null, null);
-                break;
-        }
+        uri = ShowContract.FavouriteShows.uri;
+        Log.d(TAG, "URI " + uri);
+        mCursorLoader = new CursorLoader(getActivity(), uri,
+                ShowContract.FavouriteShows.projectionsForMainActivity,
+                null, null, null);
         return mCursorLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        preference = sharedPreferences.getString(getActivity().getString(
-                R.string.preferences_key), "0");
-        switch (preference) {
-            case "0":
-                if (data.getCount() > 0) {
-                    resultList = getShowsFromCursor(data);
-                    initAdapter(resultList);
-                    progressBar.setVisibility(View.GONE);
-                    frameLayout.setBackgroundColor(Color.BLACK);
-                }
-                break;
+        if (data.getCount() > 0) {
+            favouriteShowsResultList = getShowsFromCursor(data);
+            initFavouritesAdapter(favouriteShowsResultList);
+            progressBar.setVisibility(View.GONE);
+            frameLayout.setBackgroundColor(Color.BLACK);
         }
+    }
 
+    private void initFavouritesAdapter(List<FavouriteShowsResult> favouriteShowsResults) {
+        FavouriteShowsAdapter favouriteShowsAdapter = new FavouriteShowsAdapter(getActivity(),
+                favouriteShowsResults);
+        favouriteShowsAdapter.setClickCallBacks(this);
+        showsRecyclerView.setLayoutManager(linearLayoutManager);
+        showsRecyclerView.setAdapter(favouriteShowsAdapter);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (Utility.isNetworkConnected(getActivity())) {
-            if (changed) {
-                preference = sharedPreferences.getString(getActivity()
-                        .getString(R.string.preferences_key), "0");
-                switch (preference) {
-                    case "0":
+        preference = sharedPreferences.getString(getActivity()
+                .getString(R.string.preferences_key), "0");
+        if (changed) {
+            switch (preference) {
+                case "0":
+                    if (Utility.isNetworkConnected(getActivity())) {
                         getPopularShowsFromApi(START_PAGE);
-                        break;
-                    case "1":
+                    }
+                    break;
+                case "1":
+                    if (Utility.isNetworkConnected(getActivity())) {
                         getTopRatedShowsFromApi(START_PAGE);
-                        break;
-                }
+                    }
+                    break;
+                case "2":
+                    getActivity().getSupportLoaderManager().restartLoader(SHOWS_LOADER,
+                            null, this);
+                    break;
             }
-
-        } else {
-
         }
     }
 
-    private List<Result> getShowsFromCursor(Cursor data) {
-        results = new ArrayList<>();
+    private List<FavouriteShowsResult> getShowsFromCursor(Cursor data) {
+        favouriteShowsResults = new ArrayList<>();
         if (data != null) {
             data.moveToFirst();
             while (data.moveToNext()) {
-                int showId = data.getInt(data.getColumnIndex(ShowContract.PopularShows.COLUMN_ID));
-                String title = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_TITLE));
-                String poster = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_POSTER));
-                String releaseDate = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_RELEASE_DATE));
-                String rate = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE));
-                String overview = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_OVERVIEW));
-                String backdropImage = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_BACKDROP_IMG));
+                String showId = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_ID));
+                String title = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_TITLE));
+                String poster = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_POSTER));
+                String releaseDate = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_RELEASE_DATE));
+                String rate = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_VOTE_AVERAGE));
+                String overview = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_OVERVIEW));
+                String backdropImage = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_BACKDROP_IMG));
+                String trailer = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_TRAILER));
+                String character = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_CHARACTERS));
+                String similarShows = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS));
                 Log.d(TAG, title);
-                Result popularResultData = new Result();
-                popularResultData.setId(showId);
-                popularResultData.setName(title);
-                popularResultData.setPosterPath(poster);
-                popularResultData.setFirstAirDate(releaseDate);
-                popularResultData.setVoteAverage(Double.parseDouble(rate));
-                popularResultData.setOverview(overview);
-                popularResultData.setBackdropPath(backdropImage);
-                results.add(popularResultData);
-            }
-            data.moveToFirst();
-            while (data.moveToNext()) {
-                int showId = data.getInt(data.getColumnIndex(ShowContract.PopularShows.COLUMN_ID));
-                String title = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_TITLE));
-                String poster = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_POSTER));
-                String releaseDate = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_RELEASE_DATE));
-                String rate = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_VOTE_AVERAGE));
-                String overview = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_OVERVIEW));
-                String backdropImage = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_BACKDROP_IMG));
-                String trailer = data.getString(data.getColumnIndex(ShowContract.PopularShows.COLUMN_TRAILER));
-                PopularResultData popularResultData = new PopularResultData();
-                popularResultData.setId(showId);
-                popularResultData.setTitle(title);
-                popularResultData.setPosterPath(poster);
-                popularResultData.setReleaseDate(releaseDate);
-                popularResultData.setRating(rate);
-                popularResultData.setOverview(overview);
-                popularResultData.setBackDropImagePath(backdropImage);
-                popularResultData.setTrailer(trailer);
-                Log.d(TAG, trailer + " TRAILERS FROM MAIN");
-                popularResultList.add(popularResultData);
+                FavouriteShowsResult favouriteShows = new FavouriteShowsResult();
+                favouriteShows.setId(showId);
+                favouriteShows.setTitle(title);
+                favouriteShows.setPosterPath(poster);
+                favouriteShows.setReleaseDate(releaseDate);
+                favouriteShows.setRating(rate);
+                favouriteShows.setOverview(overview);
+                favouriteShows.setBackDropImagePath(backdropImage);
+                favouriteShows.setTrailer(trailer);
+                favouriteShows.setSimilarShows(similarShows);
+                favouriteShows.setCharacters(character);
+                favouriteShowsResults.add(favouriteShows);
             }
         }
-        return results;
+        return favouriteShowsResults;
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        initAdapter(null);
+
     }
 
 
     @Override
     public void onClick(Result result, int position) {
-        //TODO:Implementation of master Detail
-        gson = new Gson();
-        resultJson = gson.toJson(result);
-        Intent intent = new Intent(getActivity(), DetailActivity.class);
-        intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
-        startActivity(intent);
+        boolean isTabUsed = getActivity().getResources().getBoolean(R.bool.tab);
+        if (!isTabUsed) {
+            gson = new Gson();
+            resultJson = gson.toJson(result);
+            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
+            startActivity(intent);
+        }
+        else{
+
+        }
     }
 
     @Override
     public void onRatedShowClick(TopRatedDetailResults ratedDetailResults, int position) {
-        gson = new Gson();
-        String topRatedShowJson = gson.toJson(ratedDetailResults);
-        Intent intent = new Intent(getActivity(), DetailActivity.class);
-        intent.putExtra(Constants.KEY_TOP_RATED, topRatedShowJson);
-        startActivity(intent);
+        boolean isTabUsed = getActivity().getResources().getBoolean(R.bool.tab);
+        if (!isTabUsed) {
+            gson = new Gson();
+            String topRatedShowJson = gson.toJson(ratedDetailResults);
+            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            intent.putExtra(Constants.KEY_TOP_RATED, topRatedShowJson);
+            startActivity(intent);
+        }
+        else{
+
+        }
+    }
+
+    @Override
+    public void onFavouriteShowClick(FavouriteShowsResult favouriteShowsResult, int position) {
+        boolean isTabUsed = getActivity().getResources().getBoolean(R.bool.tab);
+        if (!isTabUsed) {
+
+        }
+        else{
+
+        }
     }
 
 }

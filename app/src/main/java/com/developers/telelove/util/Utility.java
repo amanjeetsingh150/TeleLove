@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.developers.telelove.model.FavouriteShowsResult;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.model.TopRatedShowsModel.TopRatedDetailResults;
 import com.developers.telelove.model.TopRatedShowsModel.TopRatedResults;
@@ -31,6 +32,8 @@ public class Utility {
         void onClick(Result result, int position);
 
         void onRatedShowClick(TopRatedDetailResults ratedDetailResults, int position);
+
+        void onFavouriteShowClick(FavouriteShowsResult favouriteShowsResult, int position);
     }
 
 }

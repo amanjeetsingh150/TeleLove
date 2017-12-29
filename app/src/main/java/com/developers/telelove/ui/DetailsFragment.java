@@ -3,6 +3,7 @@ package com.developers.telelove.ui;
 
 import android.content.ContentValues;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
@@ -83,7 +84,6 @@ public class DetailsFragment extends Fragment {
     Gson gson;
     @Inject
     Retrofit retrofit;
-    boolean pageGreaterThanOne;
     SimilarShowsAdapter similarShowsAdapter;
     @BindView(R.id.similar_shows_recycler_view)
     RecyclerView similarShowsRecyclerView;
@@ -133,6 +133,10 @@ public class DetailsFragment extends Fragment {
             case "0":
                 posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                         .appendEncodedPath(popularResultData.getPosterPath()).build();
+                boolean present = checkIfPresentInDB(popularResultData.getId());
+                if (present) {
+                    materialFavoriteButton.setFavorite(true, false);
+                }
                 Picasso.with(getActivity()).load(posterUri.toString())
                         .into(posterImageView, new Callback() {
                             @Override
@@ -180,19 +184,25 @@ public class DetailsFragment extends Fragment {
                                 similarShowsJson);
                         getActivity().getContentResolver().insert(ShowContract.FavouriteShows.uri,
                                 contentValues);
-                        Snackbar.make(view, "Added to Favourites", Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(view, getActivity().getString(R.string.added_favorites),
+                                Snackbar.LENGTH_SHORT).show();
                     }
                     if (!favorite) {
                         String deleteId[] = new String[]{String.valueOf(popularResultData.getId())};
                         getActivity().getContentResolver().delete(ShowContract.FavouriteShows.uri,
                                 ShowContract.FavouriteShows.COLUMN_ID + " =?", deleteId);
-                        Snackbar.make(view, "Removed from favorites", Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(view, getActivity().getString(R.string.removed_favourites)
+                                , Snackbar.LENGTH_SHORT).show();
                     }
                 });
                 break;
             case "1":
                 Uri topRatedPosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                         .appendEncodedPath(ratedDetailResults.getPosterPath()).build();
+                boolean ratedPresent = checkIfPresentInDB(ratedDetailResults.getId());
+                if (ratedPresent) {
+                    materialFavoriteButton.setFavorite(true, false);
+                }
                 Picasso.with(getActivity()).load(topRatedPosterUri.toString())
                         .into(posterImageView, new Callback() {
                             @Override
@@ -222,7 +232,7 @@ public class DetailsFragment extends Fragment {
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_TITLE,
                                 ratedDetailResults.getName());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_POSTER,
-                                posterUri.toString());
+                                topRatedPosterUri.toString());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_RELEASE_DATE,
                                 ratedDetailResults.getFirstAirDate());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_VOTE_AVERAGE,
@@ -232,24 +242,42 @@ public class DetailsFragment extends Fragment {
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_TRAILER,
                                 videoURL);
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_BACKDROP_IMG,
-                                backDropUri.toString());
+                                topRatedBackDropUri.toString());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_CHARACTERS,
                                 characterJson);
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS,
                                 similarShowsJson);
                         getActivity().getContentResolver().insert(ShowContract.FavouriteShows.uri,
                                 contentValues);
+                        Snackbar.make(view, getActivity().getString(R.string.added_favorites),
+                                Snackbar.LENGTH_SHORT).show();
                     }
                     if (!favorite) {
-                        String deleteId[] = new String[]{String.valueOf(popularResultData.getId())};
+                        String deleteId[] = new String[]{String.valueOf(ratedDetailResults.getId())};
                         getActivity().getContentResolver().delete(ShowContract.FavouriteShows.uri,
                                 ShowContract.FavouriteShows.COLUMN_ID + " =?", deleteId);
-                        Snackbar.make(view, "Removed from favorites", Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(view, getActivity().getString(R.string.removed_favourites)
+                                , Snackbar.LENGTH_SHORT).show();
                     }
                 });
         }
 
         return view;
+    }
+
+    private boolean checkIfPresentInDB(int id) {
+        String showId[] = new String[]{String.valueOf(id)};
+        Cursor cursor = getActivity().getContentResolver().query(ShowContract.FavouriteShows.uri,
+                ShowContract.FavouriteShows.projectionsForMainActivity,
+                ShowContract.FavouriteShows.COLUMN_ID + " =?", showId, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            if (cursor.getCount() > 0) {
+                return true;
+            }
+            cursor.close();
+        }
+        return false;
     }
 
     private void fetchCrewAndSimilarShowDetails(Integer id) {
