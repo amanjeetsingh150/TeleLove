@@ -6,6 +6,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import com.developers.telelove.model.PopularShowsModel.Result;
+import com.developers.telelove.model.TopRatedShowsModel.TopRatedDetailResults;
+import com.developers.telelove.model.TopRatedShowsModel.TopRatedResults;
 
 /**
  * Created by Amanjeet Singh on 24/12/17.
@@ -27,6 +29,8 @@ public class Utility {
 
     public interface ClickCallBacks {
         void onClick(Result result, int position);
+
+        void onRatedShowClick(TopRatedDetailResults ratedDetailResults, int position);
     }
 
 }

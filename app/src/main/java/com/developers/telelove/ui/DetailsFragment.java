@@ -29,6 +29,7 @@ import com.developers.telelove.model.PopularShowsModel.PopularResultData;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
+import com.developers.telelove.model.TopRatedShowsModel.TopRatedDetailResults;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
@@ -56,6 +57,7 @@ import retrofit2.Retrofit;
  */
 public class DetailsFragment extends Fragment {
 
+    private static final String TAG = DetailsFragment.class.getSimpleName();
     String detailsJson, preference;
     @Inject
     SharedPreferences sharedPreferences;
@@ -88,6 +90,7 @@ public class DetailsFragment extends Fragment {
     Observable<SimilarShowResults> similarShowResultsObservable;
     List<SimilarShowDetails> similarShowDetails;
     private Result popularResultData;
+    private TopRatedDetailResults ratedDetailResults;
     private CharacterListAdapter characterListAdapter;
     private List<Cast> castList;
 
@@ -102,11 +105,15 @@ public class DetailsFragment extends Fragment {
         Bundle bundle = getArguments();
         detailsJson = bundle.getString(Constants.KEY_DETAILS);
         gson = new Gson();
-        preference=sharedPreferences.getString(getActivity().getString(R.string.preferences_key),
+        preference = sharedPreferences.getString(getActivity().getString(R.string.preferences_key),
                 "0");
+        Log.d(TAG, " " + preference + detailsJson);
         switch (preference) {
             case "0":
                 popularResultData = gson.fromJson(detailsJson, Result.class);
+                break;
+            case "1":
+                ratedDetailResults = gson.fromJson(detailsJson, TopRatedDetailResults.class);
         }
     }
 
@@ -116,39 +123,70 @@ public class DetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, view);
-        pageGreaterThanOne = sharedPreferences
-                .getBoolean(getActivity().getString(R.string.page_key_preference), false);
-        Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                .appendEncodedPath(popularResultData.getPosterPath()).build();
-        Picasso.with(getActivity()).load(posterUri.toString())
-                .into(posterImageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.GONE);
-                    }
+        switch (preference) {
+            case "0":
+                Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                        .appendEncodedPath(popularResultData.getPosterPath()).build();
+                Picasso.with(getActivity()).load(posterUri.toString())
+                        .into(posterImageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                progressBar.setVisibility(View.GONE);
+                            }
 
-                    @Override
-                    public void onError() {
+                            @Override
+                            public void onError() {
 
-                    }
+                            }
+                        });
+                Uri backDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
+                        .buildUpon().appendEncodedPath(popularResultData.getBackdropPath())
+                        .build();
+                Picasso.with(getActivity()).load(backDropUri.toString())
+                        .into(backDropImage);
+                fetchCrewAndSimilarShowDetails(popularResultData.getId());
+                titleTextView.setText(popularResultData.getName());
+                overviewTextView.setText(popularResultData.getOverview());
+                ratingText.setText(String.valueOf(popularResultData.getVoteAverage()));
+                materialFavoriteButton.setOnClickListener((v) -> {
+                    Snackbar.make(v, "Added to favorites", Snackbar.LENGTH_SHORT).show();
+                    materialFavoriteButton.setAnimateFavorite(true);
                 });
-        Uri backDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
-                .buildUpon().appendEncodedPath(popularResultData.getBackdropPath())
-                .build();
-        Picasso.with(getActivity()).load(backDropUri.toString())
-                .into(backDropImage);
-        fetchDetailsForPageMoreThanOne(popularResultData.getId());
-        titleTextView.setText(popularResultData.getName());
-        overviewTextView.setText(popularResultData.getOverview());
-        ratingText.setText(String.valueOf(popularResultData.getVoteAverage()));
-        materialFavoriteButton.setOnClickListener((v) -> {
-            Snackbar.make(v, "Added to favorites", Snackbar.LENGTH_SHORT).show();
-            materialFavoriteButton.setAnimateFavorite(true);
-        });
+                break;
+            case "1":
+                Uri topRatedPosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                        .appendEncodedPath(ratedDetailResults.getPosterPath()).build();
+                Picasso.with(getActivity()).load(topRatedPosterUri.toString())
+                        .into(posterImageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                progressBar.setVisibility(View.GONE);
+                            }
+
+                            @Override
+                            public void onError() {
+
+                            }
+                        });
+                Uri topRatedBackDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
+                        .buildUpon().appendEncodedPath(ratedDetailResults.getBackdropPath())
+                        .build();
+                Picasso.with(getActivity()).load(topRatedBackDropUri.toString())
+                        .into(backDropImage);
+                fetchCrewAndSimilarShowDetails(ratedDetailResults.getId());
+                titleTextView.setText(ratedDetailResults.getName());
+                overviewTextView.setText(ratedDetailResults.getOverview());
+                ratingText.setText(String.valueOf(ratedDetailResults.getVoteAverage()));
+                materialFavoriteButton.setOnClickListener((v) -> {
+                    Snackbar.make(v, "Added to favorites", Snackbar.LENGTH_SHORT).show();
+                    materialFavoriteButton.setAnimateFavorite(true);
+                });
+        }
+
         return view;
     }
 
-    private void fetchDetailsForPageMoreThanOne(Integer id) {
+    private void fetchCrewAndSimilarShowDetails(Integer id) {
         characterResultObservable = retrofit.create(ApiInterface.class)
                 .getCrew(id, BuildConfig.TV_KEY);
         characterResultObservable.subscribeOn(Schedulers.io())

@@ -5,9 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import com.developers.telelove.R;
 import com.developers.telelove.model.TopRatedShowsModel.TopRatedDetailResults;
 import com.developers.telelove.util.Constants;
+import com.developers.telelove.util.Utility;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -35,9 +38,11 @@ public class TopRatedShowsAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     private static final int ITEM = 0;
     private static final int LOADING = 1;
+    private static final String TAG = TopRatedShowsAdapter.class.getSimpleName();
     private Context context;
     private List<TopRatedDetailResults> ratedDetailResults;
     private boolean isLoadingItemAdded = false;
+    private Utility.ClickCallBacks clickCallBacks;
 
     public TopRatedShowsAdapter(Context context
             , List<TopRatedDetailResults> ratedDetailResults) {
@@ -73,8 +78,33 @@ public class TopRatedShowsAdapter extends RecyclerView.Adapter<RecyclerView.View
                 loadImage(backdrop, holder);
                 ((TopRecyclerViewHolder) holder).topRatedTitle.setText(ratedDetailResults
                         .get(position).getName());
-        }
+                ((TopRecyclerViewHolder) holder).topRatedImage.setOnClickListener(v -> {
+                    clickCallBacks.onRatedShowClick(ratedDetailResults.get(position),
+                            position);
+                });
 
+                break;
+            case LOADING:
+                if (!Utility.isNetworkConnected(context)) {
+                    ((LoadingViewHolder) holder).syncFb.setVisibility(View.VISIBLE);
+                    ((LoadingViewHolder) holder).progressBarForMoreShows
+                            .setVisibility(View.GONE);
+                    ((LoadingViewHolder) holder).syncFb.setOnClickListener(v -> {
+                        if (Utility.isNetworkConnected(context)) {
+                            //Load the next page
+                            Log.d(TAG, "Broadcast for next page loading");
+                        } else {
+                            Snackbar.make(v, context.getString(R.string.no_internet_connection),
+                                    Snackbar.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+                break;
+        }
+    }
+
+    public void setClickCallBacks(Utility.ClickCallBacks clickCallBacks) {
+        this.clickCallBacks = clickCallBacks;
     }
 
     private void loadImage(Uri backdrop, RecyclerView.ViewHolder holder) {

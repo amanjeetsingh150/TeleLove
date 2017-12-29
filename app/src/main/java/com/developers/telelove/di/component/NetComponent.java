@@ -3,6 +3,7 @@ package com.developers.telelove.di.component;
 import com.developers.telelove.di.module.AppModule;
 import com.developers.telelove.di.module.NetModule;
 import com.developers.telelove.ui.DetailsFragment;
+import com.developers.telelove.ui.activities.DetailActivity;
 import com.developers.telelove.ui.activities.MainActivity;
 import com.developers.telelove.ui.MainFragment;
 import com.developers.telelove.ui.activities.SettingsActivity;
@@ -31,5 +32,7 @@ public interface NetComponent {
     void inject(FetchVideos fetchVideos);
 
     void inject(SettingsActivity.PrefFrag prefFrag);
+
+    void inject(DetailActivity detailActivity);
 
 }

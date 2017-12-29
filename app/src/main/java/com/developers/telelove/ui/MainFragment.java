@@ -93,20 +93,13 @@ public class MainFragment extends Fragment implements
     @BindView(R.id.frame_layout_list)
     FrameLayout frameLayout;
     Observable<TopRatedResults> ratedResultsObservable;
-    Observable<VideoResult> videoResultObservable;
-    List<VideoDetailResult> videoDetailResults;
     Uri uri;
     CursorLoader mCursorLoader;
-    PopularResultData popularResultData;
     TopRatedShowsAdapter topRatedShowsAdapter;
     private PopularShowsAdapter popularShowsAdapter;
     private List<Result> resultList = new ArrayList<>();
     private List<TopRatedDetailResults> ratedDetailResults;
     private List<PopularResultData> popularResultList = new ArrayList<>();
-    private String trailer;
-    private List<Cast> castList, castDetailResult;
-    private List<SimilarShowDetails> similarShowDetails, similarShowDetailInfo;
-
 
     public MainFragment() {
         // Required empty public constructor
@@ -169,10 +162,12 @@ public class MainFragment extends Fragment implements
 
     private void initTopRatedAdapter(List<TopRatedDetailResults> ratedResults) {
         topRatedShowsAdapter = new TopRatedShowsAdapter(getActivity(), ratedResults);
+        topRatedShowsAdapter.setClickCallBacks(this);
         showsRecyclerView.setAdapter(topRatedShowsAdapter);
     }
 
     public void getPopularShowsFromApi(int page) {
+        Log.d(TAG, "Getting Popular");
         if (page > 1) {
             showLoadMoreSpinner();
         }
@@ -249,7 +244,9 @@ public class MainFragment extends Fragment implements
                         if (!disposable.isDisposed()) {
                             disposable.dispose();
                         }
-                        initTopRatedAdapter(ratedDetailResults);
+                        if (!(page > 1)) {
+                            initTopRatedAdapter(ratedDetailResults);
+                        }
                     }
                 });
     }
@@ -345,8 +342,12 @@ public class MainFragment extends Fragment implements
                 preference = sharedPreferences.getString(getActivity()
                         .getString(R.string.preferences_key), "0");
                 switch (preference) {
+                    case "0":
+                        getPopularShowsFromApi(START_PAGE);
+                        break;
                     case "1":
                         getTopRatedShowsFromApi(START_PAGE);
+                        break;
                 }
             }
 
@@ -414,9 +415,18 @@ public class MainFragment extends Fragment implements
     public void onClick(Result result, int position) {
         //TODO:Implementation of master Detail
         gson = new Gson();
-        resultJson=gson.toJson(result);
-        Intent intent=new Intent(getActivity(),DetailActivity.class);
-        intent.putExtra(Constants.KEY_POPULAR_SHOWS,resultJson);
+        resultJson = gson.toJson(result);
+        Intent intent = new Intent(getActivity(), DetailActivity.class);
+        intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRatedShowClick(TopRatedDetailResults ratedDetailResults, int position) {
+        gson = new Gson();
+        String topRatedShowJson = gson.toJson(ratedDetailResults);
+        Intent intent = new Intent(getActivity(), DetailActivity.class);
+        intent.putExtra(Constants.KEY_TOP_RATED, topRatedShowJson);
         startActivity(intent);
     }
 
