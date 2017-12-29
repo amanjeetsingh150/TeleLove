@@ -13,8 +13,8 @@ import android.support.annotation.NonNull;
 public class ShowsProvider extends ContentProvider {
 
 
-    private static final int POPULAR = 1;
-    private static final int POPULAR_WITH_ID = 2;
+    private static final int FAVOUR = 1;
+    private static final int FAVOUR_WITH_ID = 2;
     private ShowsOpenHelper showsOpenHelper;
     private UriMatcher uriMatcher = buildUriMatcher();
 
@@ -23,8 +23,8 @@ public class ShowsProvider extends ContentProvider {
 
     public static UriMatcher buildUriMatcher() {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_POPULAR, POPULAR);
-        uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_POPULAR + "/*", POPULAR_WITH_ID);
+        uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_FAVOURITE, FAVOUR);
+        uriMatcher.addURI(ShowContract.CONTENT_AUTHORITY, ShowContract.PATH_FAVOURITE + "/*", FAVOUR_WITH_ID);
         return uriMatcher;
     }
 
@@ -33,12 +33,12 @@ public class ShowsProvider extends ContentProvider {
         SQLiteDatabase database = showsOpenHelper.getWritableDatabase();
         int rowsDeleted = 0;
         switch (uriMatcher.match(uri)) {
-            case POPULAR:
-                rowsDeleted = database.delete(ShowContract.PopularShows.TABLE_NAME, selection, selectionArgs);
+            case FAVOUR:
+                rowsDeleted = database.delete(ShowContract.FavouriteShows.TABLE_NAME, selection, selectionArgs);
                 break;
-            case POPULAR_WITH_ID:
-                rowsDeleted = database.delete(ShowContract.PopularShows.TABLE_NAME,
-                        ShowContract.PopularShows.COLUMN_ID + " =?",
+            case FAVOUR_WITH_ID:
+                rowsDeleted = database.delete(ShowContract.FavouriteShows.TABLE_NAME,
+                        ShowContract.FavouriteShows.COLUMN_ID + " =?",
                         new String[]{String.valueOf(ContentUris.parseId(uri))});
         }
         if (rowsDeleted != 0) {
@@ -50,10 +50,10 @@ public class ShowsProvider extends ContentProvider {
     @Override
     public String getType(@NonNull Uri uri) {
         switch (uriMatcher.match(uri)) {
-            case POPULAR:
-                return ShowContract.PopularShows.CONTENT_TYPE;
-            case POPULAR_WITH_ID:
-                return ShowContract.PopularShows.CONTENT_ITEM_TYPE;
+            case FAVOUR:
+                return ShowContract.FavouriteShows.CONTENT_TYPE;
+            case FAVOUR_WITH_ID:
+                return ShowContract.FavouriteShows.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown Uri " + uri);
         }
@@ -65,12 +65,12 @@ public class ShowsProvider extends ContentProvider {
         Uri returnUri = null;
         long id;
         switch (uriMatcher.match(uri)) {
-            case POPULAR:
-                id = database.insert(ShowContract.PopularShows.TABLE_NAME, null, values);
+            case FAVOUR:
+                id = database.insert(ShowContract.FavouriteShows.TABLE_NAME, null, values);
                 if (id == -1) {
                     throw new SQLException("Error In insertion");
                 }
-                returnUri = ShowContract.PopularShows.buildPopularShowsUri(id);
+                returnUri = ShowContract.FavouriteShows.buildFavouriteShowsUri(id);
                 break;
         }
         getContext().getContentResolver().notifyChange(uri, null);
@@ -88,14 +88,14 @@ public class ShowsProvider extends ContentProvider {
                         String[] selectionArgs, String sortOrder) {
         Cursor mCursor;
         switch (uriMatcher.match(uri)) {
-            case POPULAR:
-                mCursor = showsOpenHelper.getReadableDatabase().query(ShowContract.PopularShows.TABLE_NAME,
+            case FAVOUR:
+                mCursor = showsOpenHelper.getReadableDatabase().query(ShowContract.FavouriteShows.TABLE_NAME,
                         projection, selection, selectionArgs, null, null, sortOrder);
                 mCursor.setNotificationUri(getContext().getContentResolver(), uri);
                 return mCursor;
-            case POPULAR_WITH_ID:
-                mCursor = showsOpenHelper.getReadableDatabase().query(ShowContract.PopularShows.TABLE_NAME,
-                        projection, ShowContract.PopularShows.COLUMN_ID + " =? ",
+            case FAVOUR_WITH_ID:
+                mCursor = showsOpenHelper.getReadableDatabase().query(ShowContract.FavouriteShows.TABLE_NAME,
+                        projection, ShowContract.FavouriteShows.COLUMN_ID + " =? ",
                         new String[]{String.valueOf(ContentUris.parseId(uri))},
                         null, null, sortOrder);
                 mCursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -110,12 +110,12 @@ public class ShowsProvider extends ContentProvider {
                       String[] selectionArgs) {
         int numUpdated = 0;
         switch (uriMatcher.match(uri)) {
-            case POPULAR:
-                numUpdated = showsOpenHelper.getWritableDatabase().update(ShowContract.PopularShows.TABLE_NAME,
+            case FAVOUR:
+                numUpdated = showsOpenHelper.getWritableDatabase().update(ShowContract.FavouriteShows.TABLE_NAME,
                         values, selection, selectionArgs);
                 break;
-            case POPULAR_WITH_ID:
-                numUpdated = showsOpenHelper.getWritableDatabase().update(ShowContract.PopularShows.TABLE_NAME,
+            case FAVOUR_WITH_ID:
+                numUpdated = showsOpenHelper.getWritableDatabase().update(ShowContract.FavouriteShows.TABLE_NAME,
                         values, selection, selectionArgs);
                 break;
             default:
@@ -132,12 +132,12 @@ public class ShowsProvider extends ContentProvider {
         SQLiteDatabase database = showsOpenHelper.getWritableDatabase();
 
         switch (uriMatcher.match(uri)) {
-            case POPULAR:
+            case FAVOUR:
                 int count = 0;
                 database.beginTransaction();
                 try {
                     for (ContentValues contentValues : values) {
-                        long id = database.insert(ShowContract.PopularShows.TABLE_NAME,
+                        long id = database.insert(ShowContract.FavouriteShows.TABLE_NAME,
                                 null, contentValues);
                         if (id == -1) {
                             count++;

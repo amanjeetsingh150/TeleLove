@@ -1,6 +1,7 @@
 package com.developers.telelove.ui;
 
 
+import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.media.Image;
 import android.net.Uri;
@@ -23,6 +24,7 @@ import com.developers.telelove.BuildConfig;
 import com.developers.telelove.R;
 import com.developers.telelove.adapters.CharacterListAdapter;
 import com.developers.telelove.adapters.SimilarShowsAdapter;
+import com.developers.telelove.data.ShowContract;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.model.CharactersModel.CharacterResult;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
@@ -30,6 +32,7 @@ import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowResults;
 import com.developers.telelove.model.TopRatedShowsModel.TopRatedDetailResults;
+import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
@@ -58,7 +61,7 @@ import retrofit2.Retrofit;
 public class DetailsFragment extends Fragment {
 
     private static final String TAG = DetailsFragment.class.getSimpleName();
-    String detailsJson, preference;
+    String detailsJson, preference, videoURL;
     @Inject
     SharedPreferences sharedPreferences;
     @BindView(R.id.poster_image_view)
@@ -87,12 +90,15 @@ public class DetailsFragment extends Fragment {
     LinearLayoutManager characterLayoutManager, similarShowLayoutManager;
     Observable<VideoResult> videoResultObservable;
     Observable<CharacterResult> characterResultObservable;
-    Observable<SimilarShowResults> similarShowResultsObservable;
     List<SimilarShowDetails> similarShowDetails;
+    List<VideoDetailResult> videoDetailResults;
+    Uri posterUri, backDropUri;
+    String videoPath, similarShowsJson, characterJson;
     private Result popularResultData;
     private TopRatedDetailResults ratedDetailResults;
     private CharacterListAdapter characterListAdapter;
     private List<Cast> castList;
+
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -125,7 +131,7 @@ public class DetailsFragment extends Fragment {
         ButterKnife.bind(this, view);
         switch (preference) {
             case "0":
-                Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                         .appendEncodedPath(popularResultData.getPosterPath()).build();
                 Picasso.with(getActivity()).load(posterUri.toString())
                         .into(posterImageView, new Callback() {
@@ -139,7 +145,8 @@ public class DetailsFragment extends Fragment {
 
                             }
                         });
-                Uri backDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
+                videoURL = getVideoPath(popularResultData.getId());
+                backDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
                         .buildUpon().appendEncodedPath(popularResultData.getBackdropPath())
                         .build();
                 Picasso.with(getActivity()).load(backDropUri.toString())
@@ -148,9 +155,39 @@ public class DetailsFragment extends Fragment {
                 titleTextView.setText(popularResultData.getName());
                 overviewTextView.setText(popularResultData.getOverview());
                 ratingText.setText(String.valueOf(popularResultData.getVoteAverage()));
-                materialFavoriteButton.setOnClickListener((v) -> {
-                    Snackbar.make(v, "Added to favorites", Snackbar.LENGTH_SHORT).show();
-                    materialFavoriteButton.setAnimateFavorite(true);
+                materialFavoriteButton.setOnFavoriteChangeListener((buttonView, favorite) -> {
+                    if (favorite) {
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_ID,
+                                popularResultData.getId());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_TITLE,
+                                popularResultData.getName());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_POSTER,
+                                posterUri.toString());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_RELEASE_DATE,
+                                popularResultData.getFirstAirDate());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_VOTE_AVERAGE,
+                                popularResultData.getVoteAverage());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_OVERVIEW,
+                                popularResultData.getOverview());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_TRAILER,
+                                videoURL);
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_BACKDROP_IMG,
+                                backDropUri.toString());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_CHARACTERS,
+                                characterJson);
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS,
+                                similarShowsJson);
+                        getActivity().getContentResolver().insert(ShowContract.FavouriteShows.uri,
+                                contentValues);
+                        Snackbar.make(view, "Added to Favourites", Snackbar.LENGTH_SHORT).show();
+                    }
+                    if (!favorite) {
+                        String deleteId[] = new String[]{String.valueOf(popularResultData.getId())};
+                        getActivity().getContentResolver().delete(ShowContract.FavouriteShows.uri,
+                                ShowContract.FavouriteShows.COLUMN_ID + " =?", deleteId);
+                        Snackbar.make(view, "Removed from favorites", Snackbar.LENGTH_SHORT).show();
+                    }
                 });
                 break;
             case "1":
@@ -177,9 +214,38 @@ public class DetailsFragment extends Fragment {
                 titleTextView.setText(ratedDetailResults.getName());
                 overviewTextView.setText(ratedDetailResults.getOverview());
                 ratingText.setText(String.valueOf(ratedDetailResults.getVoteAverage()));
-                materialFavoriteButton.setOnClickListener((v) -> {
-                    Snackbar.make(v, "Added to favorites", Snackbar.LENGTH_SHORT).show();
-                    materialFavoriteButton.setAnimateFavorite(true);
+                materialFavoriteButton.setOnFavoriteChangeListener((buttonView, favorite) -> {
+                    if (favorite) {
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_ID,
+                                ratedDetailResults.getId());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_TITLE,
+                                ratedDetailResults.getName());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_POSTER,
+                                posterUri.toString());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_RELEASE_DATE,
+                                ratedDetailResults.getFirstAirDate());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_VOTE_AVERAGE,
+                                ratedDetailResults.getVoteAverage());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_OVERVIEW,
+                                ratedDetailResults.getOverview());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_TRAILER,
+                                videoURL);
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_BACKDROP_IMG,
+                                backDropUri.toString());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_CHARACTERS,
+                                characterJson);
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS,
+                                similarShowsJson);
+                        getActivity().getContentResolver().insert(ShowContract.FavouriteShows.uri,
+                                contentValues);
+                    }
+                    if (!favorite) {
+                        String deleteId[] = new String[]{String.valueOf(popularResultData.getId())};
+                        getActivity().getContentResolver().delete(ShowContract.FavouriteShows.uri,
+                                ShowContract.FavouriteShows.COLUMN_ID + " =?", deleteId);
+                        Snackbar.make(view, "Removed from favorites", Snackbar.LENGTH_SHORT).show();
+                    }
                 });
         }
 
@@ -193,6 +259,7 @@ public class DetailsFragment extends Fragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap(characterResult -> {
                     castList = characterResult.getCast();
+                    characterJson = gson.toJson(castList);
                     return retrofit.create(ApiInterface.class).getSimilarShows(id, BuildConfig.TV_KEY)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread());
@@ -209,6 +276,7 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onNext(SimilarShowResults similarShowResults) {
                 similarShowDetails = similarShowResults.getResults();
+                similarShowsJson = gson.toJson(similarShowDetails);
             }
 
             @Override
@@ -230,6 +298,62 @@ public class DetailsFragment extends Fragment {
                 similarShowsRecyclerView.setAdapter(similarShowsAdapter);
             }
         });
+    }
+
+    private String getVideoPath(int id) {
+        videoResultObservable = retrofit.create(ApiInterface.class)
+                .getTrailers(id, BuildConfig.TV_KEY);
+        videoResultObservable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<VideoResult>() {
+
+                    Disposable disposable;
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(VideoResult videoResult) {
+                        videoDetailResults = videoResult.getResults();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        if (!(disposable.isDisposed())) {
+                            disposable.dispose();
+                        }
+                        if (videoDetailResults != null) {
+                            if (videoDetailResults.size() > 0) {
+                                for (VideoDetailResult videoDetailResult : videoDetailResults) {
+                                    String key = videoDetailResult.getKey();
+                                    if (key != null) {
+                                        if (key.length() > 0) {
+                                            Uri videoUri = Uri.parse(Constants.YOUTUBE_BASE_URL)
+                                                    .buildUpon()
+                                                    .appendQueryParameter("v", key).build();
+                                            videoPath = videoUri.toString();
+                                            break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                videoPath = getActivity()
+                                        .getString(R.string.trailer_not_available_error);
+                            }
+                        } else {
+                            videoPath = getActivity()
+                                    .getString(R.string.trailer_not_available_error);
+                        }
+                    }
+                });
+        return videoPath;
     }
 
 

@@ -2,6 +2,7 @@ package com.developers.telelove.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
@@ -75,7 +76,7 @@ public class TopRatedShowsAdapter extends RecyclerView.Adapter<RecyclerView.View
             case ITEM:
                 Uri backdrop = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                         .appendEncodedPath(ratedDetailResults.get(position).getBackdropPath()).build();
-                loadImage(backdrop, holder);
+                loadImage(backdrop, holder, position);
                 ((TopRecyclerViewHolder) holder).topRatedTitle.setText(ratedDetailResults
                         .get(position).getName());
                 ((TopRecyclerViewHolder) holder).topRatedImage.setOnClickListener(v -> {
@@ -107,7 +108,7 @@ public class TopRatedShowsAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.clickCallBacks = clickCallBacks;
     }
 
-    private void loadImage(Uri backdrop, RecyclerView.ViewHolder holder) {
+    private void loadImage(Uri backdrop, RecyclerView.ViewHolder holder, int position) {
         Picasso.with(context).load(backdrop).into(new Target() {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -120,7 +121,12 @@ public class TopRatedShowsAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
-
+                ((TopRecyclerViewHolder) holder).topRatedImage
+                        .setBackgroundResource(R.drawable.user_placeholder);
+                if (ratedDetailResults.get(position).getName() != null) {
+                    ((TopRecyclerViewHolder) holder).topRatedTitle
+                            .setTextColor(Color.BLACK);
+                }
             }
 
             @Override

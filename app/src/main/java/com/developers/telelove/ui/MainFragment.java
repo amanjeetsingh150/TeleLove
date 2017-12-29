@@ -121,15 +121,20 @@ public class MainFragment extends Fragment implements
         switch (preference) {
             case "0":
                 getPopularShowsFromApi(1);
+                frameLayout.setBackgroundColor(Color.BLACK);
                 break;
             case "1":
                 getTopRatedShowsFromApi(START_PAGE);
+                frameLayout.setBackgroundColor(Color.BLACK);
                 break;
         }
         showsRecyclerView.setLayoutManager(linearLayoutManager);
         scrollListener = new PaginationScrollListener(linearLayoutManager) {
             @Override
             public void onLoadMore(int current_page) {
+                preference = sharedPreferences.getString(getActivity().getString
+                        (R.string.preferences_key), "0");
+                Log.d(TAG,"preference "+current_page +preference);
                 if (Utility.isNetworkConnected(getActivity())) {
                     switch (preference) {
                         case "0":
@@ -268,7 +273,16 @@ public class MainFragment extends Fragment implements
         showsRecyclerView.post(new Runnable() {
             @Override
             public void run() {
-                popularShowsAdapter.addLoadingFooter();
+                preference = sharedPreferences.getString(getActivity().getString
+                        (R.string.preferences_key), "0");
+                switch (preference){
+                    case "0":
+                        popularShowsAdapter.addLoadingFooter();
+                        break;
+                    case "1":
+                        topRatedShowsAdapter.addLoadingFooter();
+                        break;
+                }
             }
         });
     }

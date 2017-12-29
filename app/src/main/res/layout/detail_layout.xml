@@ -23,9 +23,9 @@
                 android:layout_width="140dp"
                 android:layout_height="184dp"
                 android:layout_margin="5dp"
+                android:contentDescription="@string/description_detail_poster"
                 android:elevation="4dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="@string/description_detail_poster" />
+                android:scaleType="centerCrop" />
 
             <ProgressBar
                 android:id="@+id/progress_poster"
@@ -79,7 +79,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_marginTop="5dp"
                 app:mfb_animate_favorite="true"
                 app:mfb_animate_unfavorite="false"
                 app:mfb_bounce_duration="300"
@@ -133,10 +132,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:fontFamily="serif"
-            android:textStyle="bold"
             android:text="@string/similar_shows_text"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp"
+            android:textStyle="bold"
             tools:text="Similar Shows:" />
 
         <android.support.v7.widget.RecyclerView
