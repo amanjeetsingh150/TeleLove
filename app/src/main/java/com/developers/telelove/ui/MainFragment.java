@@ -459,7 +459,7 @@ public class MainFragment extends Fragment implements
         if (!isTabUsed) {
             gson = new Gson();
             String favouriteShowJson = gson.toJson(favouriteShowsResult);
-            Intent intent = new Intent();
+            Intent intent = new Intent(getActivity(),DetailActivity.class);
             intent.putExtra(Constants.KEY_FAVOURITES, favouriteShowJson);
             startActivity(intent);
         } else {

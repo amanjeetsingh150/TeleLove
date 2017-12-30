@@ -27,9 +27,12 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
         ((App) getApplication()).getNetComponent().inject(this);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,
-                    new MainFragment()).commit();
+        boolean isTabUsed = getResources().getBoolean(R.bool.tab);
+        if(!isTabUsed){
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction().add(R.id.main_fragment_container,
+                        new MainFragment()).commit();
+            }
         }
     }
 }

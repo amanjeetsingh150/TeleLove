@@ -284,8 +284,74 @@ public class DetailsFragment extends Fragment {
                                 , Snackbar.LENGTH_SHORT).show();
                     }
                 });
-        }
+                break;
+            case "2":
+                Uri favouritePosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
+                        .appendEncodedPath(favouriteShowsResult.getPosterPath()).build();
+                boolean favouritePresent = checkIfPresentInDB(Integer
+                        .parseInt(favouriteShowsResult.getId()));
+                if (favouritePresent) {
+                    materialFavoriteButton.setFavorite(true, false);
+                }
+                Picasso.with(getActivity()).load(favouritePosterUri.toString())
+                        .into(posterImageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                progressBar.setVisibility(View.GONE);
+                            }
 
+                            @Override
+                            public void onError() {
+
+                            }
+                        });
+                Uri favouriteShowBackDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
+                        .buildUpon().appendEncodedPath(favouriteShowsResult.getBackDropImagePath())
+                        .build();
+                Picasso.with(getActivity()).load(favouriteShowBackDropUri.toString())
+                        .into(backDropImage);
+                fetchCrewAndSimilarShowDetails(Integer.parseInt(favouriteShowsResult.getId()));
+                titleTextView.setText(favouriteShowsResult.getTitle());
+                overviewTextView.setText(favouriteShowsResult.getOverview());
+                ratingText.setText(String.valueOf(favouriteShowsResult.getRating()));
+                materialFavoriteButton.setOnFavoriteChangeListener((buttonView, favorite) -> {
+                    if (favorite) {
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_ID,
+                                favouriteShowsResult.getId());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_TITLE,
+                                favouriteShowsResult.getTitle());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_POSTER,
+                                favouritePosterUri.toString());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_RELEASE_DATE,
+                                favouriteShowsResult.getReleaseDate());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_VOTE_AVERAGE,
+                                favouriteShowsResult.getRating());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_OVERVIEW,
+                                favouriteShowsResult.getOverview());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_TRAILER,
+                                videoURL);
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_BACKDROP_IMG,
+                                favouriteShowBackDropUri.toString());
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_CHARACTERS,
+                                characterJson);
+                        contentValues.put(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS,
+                                similarShowsJson);
+                        getActivity().getContentResolver().insert(ShowContract.FavouriteShows.uri,
+                                contentValues);
+                        Snackbar.make(view, getActivity().getString(R.string.added_favorites),
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                    if (!favorite) {
+                        String deleteId[] = new String[]{String.valueOf(favouriteShowsResult.getId())};
+                        getActivity().getContentResolver().delete(ShowContract.FavouriteShows.uri,
+                                ShowContract.FavouriteShows.COLUMN_ID + " =?", deleteId);
+                        Snackbar.make(view, getActivity().getString(R.string.removed_favourites)
+                                , Snackbar.LENGTH_SHORT).show();
+                    }
+                });
+                break;
+        }
         return view;
     }
 
