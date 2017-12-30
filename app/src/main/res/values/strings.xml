@@ -39,4 +39,6 @@
     <string name="sort_by">Sort By</string>
     <string name="added_favorites">Added to Favourites</string>
     <string name="removed_favourites">Removed from Favourites</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

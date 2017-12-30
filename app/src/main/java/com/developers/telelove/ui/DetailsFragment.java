@@ -1,13 +1,16 @@
 package com.developers.telelove.ui;
 
 
+import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -38,6 +41,7 @@ import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
+import com.developers.telelove.widget.ShowWidgetProvider;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -88,6 +92,8 @@ public class DetailsFragment extends Fragment {
     SimilarShowsAdapter similarShowsAdapter;
     @BindView(R.id.similar_shows_recycler_view)
     RecyclerView similarShowsRecyclerView;
+    @BindView(R.id.fab_widget)
+    FloatingActionButton widgetAddFab;
     LinearLayoutManager characterLayoutManager, similarShowLayoutManager;
     Observable<VideoResult> videoResultObservable;
     Observable<CharacterResult> characterResultObservable;
@@ -219,6 +225,25 @@ public class DetailsFragment extends Fragment {
                                 , Snackbar.LENGTH_SHORT).show();
                     }
                 });
+                widgetAddFab.setOnClickListener(v -> {
+                    SharedPreferences shared = getActivity()
+                            .getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+                    AppWidgetManager appWidgetManager = AppWidgetManager
+                            .getInstance(getActivity());
+                    Bundle bundle = new Bundle();
+                    int appWidgetId = bundle.getInt(
+                            AppWidgetManager.EXTRA_APPWIDGET_ID,
+                            AppWidgetManager.INVALID_APPWIDGET_ID);
+                    gson = new Gson();
+                    String popularJson = gson.toJson(popularResultData);
+                    shared.edit().putString(Constants.KEY_WIDGET_JSON, popularJson)
+                            .apply();
+                    shared.edit().putString(getActivity().getString(R.string.preferences_key),
+                            "0").apply();
+                    ShowWidgetProvider.updateAppWidgetWithPopularShow(getActivity(),
+                            appWidgetManager, appWidgetId, popularResultData);
+                    Snackbar.make(v, "Added to widget", Snackbar.LENGTH_SHORT).show();
+                });
                 break;
             case "1":
                 Uri topRatedPosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
@@ -283,6 +308,25 @@ public class DetailsFragment extends Fragment {
                         Snackbar.make(view, getActivity().getString(R.string.removed_favourites)
                                 , Snackbar.LENGTH_SHORT).show();
                     }
+                });
+                widgetAddFab.setOnClickListener(v -> {
+                    SharedPreferences shared = getActivity()
+                            .getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+                    AppWidgetManager appWidgetManager = AppWidgetManager
+                            .getInstance(getActivity());
+                    Bundle bundle = new Bundle();
+                    int appWidgetId = bundle.getInt(
+                            AppWidgetManager.EXTRA_APPWIDGET_ID,
+                            AppWidgetManager.INVALID_APPWIDGET_ID);
+                    gson = new Gson();
+                    String ratedShowJson = gson.toJson(ratedDetailResults);
+                    shared.edit().putString(Constants.KEY_WIDGET_JSON,
+                            ratedShowJson).apply();
+                    shared.edit().putString(getActivity().getString(R.string.preferences_key),
+                            "1").apply();
+                    ShowWidgetProvider.updateAppWidgetWithRatedShow(getActivity(),
+                            appWidgetManager, appWidgetId, ratedDetailResults);
+                    Snackbar.make(v, "Added to widget", Snackbar.LENGTH_SHORT).show();
                 });
                 break;
             case "2":
@@ -349,6 +393,25 @@ public class DetailsFragment extends Fragment {
                         Snackbar.make(view, getActivity().getString(R.string.removed_favourites)
                                 , Snackbar.LENGTH_SHORT).show();
                     }
+                });
+                widgetAddFab.setOnClickListener(v -> {
+                    SharedPreferences shared = getActivity()
+                            .getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+                    AppWidgetManager appWidgetManager = AppWidgetManager
+                            .getInstance(getActivity());
+                    Bundle bundle = new Bundle();
+                    int appWidgetId = bundle.getInt(
+                            AppWidgetManager.EXTRA_APPWIDGET_ID,
+                            AppWidgetManager.INVALID_APPWIDGET_ID);
+                    gson = new Gson();
+                    String favouriteJson = gson.toJson(favouriteShowsResult);
+                    shared.edit().putString(Constants.KEY_WIDGET_JSON, favouriteJson)
+                            .apply();
+                    shared.edit().putString(getActivity().getString(R.string.preferences_key),
+                            "2").apply();
+                    ShowWidgetProvider.updateAppWidgetWithFavouriteShow(getActivity()
+                            , appWidgetManager, appWidgetId, favouriteShowsResult);
+                    Snackbar.make(v, "Added to widget", Snackbar.LENGTH_SHORT).show();
                 });
                 break;
         }
