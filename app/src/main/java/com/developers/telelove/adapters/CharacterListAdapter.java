@@ -18,7 +18,6 @@ import android.widget.TextView;
 import com.developers.telelove.R;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.util.Constants;
-import com.jackandphantom.blurimage.BlurImage;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 

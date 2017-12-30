@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/poster_image_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="140dp"
+        android:layout_height="170dp"
         android:layout_margin="3dp"
         android:scaleType="centerCrop" />
 
@@ -22,18 +22,18 @@
             android:id="@+id/title_widget_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:fontFamily="sans-serif"
             android:textColor="@android:color/white"
             android:textSize="16sp"
-            android:layout_margin="5dp"
             tools:text="Friends" />
 
         <TextView
             android:id="@+id/release_date_widget_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/white"
             android:layout_margin="5dp"
+            android:textColor="@android:color/white"
             android:textSize="14sp" />
 
         <TextView

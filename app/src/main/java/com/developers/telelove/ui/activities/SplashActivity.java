@@ -1,16 +1,19 @@
 package com.developers.telelove.ui.activities;
 
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
+import com.developers.telelove.QuoteJobService;
 import com.developers.telelove.R;
 import com.developers.telelove.data.ShowContract;
 import com.developers.telelove.data.ShowsOpenHelper;
@@ -24,6 +27,16 @@ import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
 import com.developers.telelove.util.FetchVideos;
 import com.developers.telelove.util.Utility;
+import com.firebase.jobdispatcher.Constraint;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Trigger;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.wang.avi.indicators.BallSpinFadeLoaderIndicator;
 
@@ -44,10 +57,11 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
+import static com.firebase.jobdispatcher.FirebaseJobDispatcher.SCHEDULE_RESULT_SUCCESS;
+
 public class SplashActivity extends AppCompatActivity {
 
     public static final String firstRun = "firstRun";
-    public static final int FIRST_PAGE = 1;
     private static final String TAG = SplashActivity.class.getSimpleName();
     @Inject
     SharedPreferences sharedPreferences;
@@ -55,6 +69,8 @@ public class SplashActivity extends AppCompatActivity {
     Retrofit retrofit;
     BallSpinFadeLoaderIndicator splashProgressBar;
     Observable<PopularPageResult> pageResultObservable;
+    private FirebaseDatabase database;
+    private DatabaseReference databaseReference;
     private List<Result> resultList;
     private Gson gson;
 
@@ -66,51 +82,39 @@ public class SplashActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         ((App) getApplication()).getNetComponent().inject(this);
         if (sharedPreferences.getBoolean(firstRun, true)) {
-            getPopularShowsFromApi(FIRST_PAGE);
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder
+                    (SplashActivity.this);
+            dialogBuilder.setMessage("Do you want to receive quotes as notification?");
+            dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    FirebaseJobDispatcher dispatcher = new
+                            FirebaseJobDispatcher(new GooglePlayDriver(getApplicationContext()));
+                    int periodicity = 120;
+                    Job quoteJob = dispatcher.newJobBuilder()
+                            .setService(QuoteJobService.class)
+                            .setTag("quote")
+                            .setRecurring(true)
+                            .setTrigger(Trigger.executionWindow(60,80))
+                            .build();
+                    dispatcher.schedule(quoteJob);
+                    boolean s=dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS;
+                    Log.d(TAG, "Job scheduling"+ s);
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                }
+            });
+            dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+            dialogBuilder.show();
         } else {
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
         }
     }
 
-
-    public void getPopularShowsFromApi(int page) {
-        pageResultObservable = retrofit.create(ApiInterface.class)
-                .getPopularShows(BuildConfig.TV_KEY, page);
-        pageResultObservable.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<PopularPageResult>() {
-                    Disposable disposable;
-
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        disposable = d;
-                    }
-
-                    @Override
-                    public void onNext(PopularPageResult popularPageResult) {
-                        resultList = popularPageResult.getResults();
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        if (!disposable.isDisposed()) {
-                            disposable.dispose();
-                        }
-                        splashProgressBar.setVisible(false, false);
-                        gson = new Gson();
-                        String resultJson = gson.toJson(resultList);
-                        Log.d(TAG,resultJson);
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                        intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
-                        startActivity(intent);
-                    }
-                });
-    }
 
     @Override
     protected void onResume() {

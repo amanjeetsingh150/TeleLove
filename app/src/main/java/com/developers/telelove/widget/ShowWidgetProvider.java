@@ -38,9 +38,11 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.show_widget_provider);
-        views.setTextViewText(R.id.title_widget_text_view, result.getName());
-        views.setTextViewText(R.id.release_date_widget_text_view, result.getFirstAirDate());
-        views.setTextViewText(R.id.rating_widget_text_view, String.valueOf(result.getVoteAverage()));
+        views.setTextViewText(R.id.title_widget_text_view, "Title: " + result.getName());
+        views.setTextViewText(R.id.release_date_widget_text_view, "Release: " +
+                result.getFirstAirDate());
+        views.setTextViewText(R.id.rating_widget_text_view, "Rating: " +
+                String.valueOf(result.getVoteAverage()));
         Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                 .appendEncodedPath(result.getPosterPath()).build();
         Picasso.with(context).load(posterUri).into(new Target() {
@@ -73,10 +75,12 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.show_widget_provider);
-        views.setTextViewText(R.id.title_widget_text_view, ratedDetailResults.getName());
-        views.setTextViewText(R.id.release_date_widget_text_view, ratedDetailResults.getFirstAirDate());
+        views.setTextViewText(R.id.title_widget_text_view, "Title: " +
+                ratedDetailResults.getName());
+        views.setTextViewText(R.id.release_date_widget_text_view, "Release Date: " +
+                ratedDetailResults.getFirstAirDate());
         views.setTextViewText(R.id.rating_widget_text_view,
-                String.valueOf(ratedDetailResults.getVoteAverage()));
+                "Rating: " + String.valueOf(ratedDetailResults.getVoteAverage()));
         Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                 .appendEncodedPath(ratedDetailResults.getPosterPath()).build();
         Picasso.with(context).load(posterUri).into(new Target() {
@@ -109,9 +113,11 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.show_widget_provider);
-        views.setTextViewText(R.id.title_widget_text_view, result.getTitle());
-        views.setTextViewText(R.id.release_date_widget_text_view, result.getReleaseDate());
-        views.setTextViewText(R.id.rating_widget_text_view, result.getRating());
+        views.setTextViewText(R.id.title_widget_text_view, "Title: " +
+                result.getTitle());
+        views.setTextViewText(R.id.release_date_widget_text_view, "Release: " +
+                result.getReleaseDate());
+        views.setTextViewText(R.id.rating_widget_text_view, "Rating: " + result.getRating());
         Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                 .appendEncodedPath(result.getPosterPath()).build();
         Picasso.with(context).load(posterUri).into(new Target() {

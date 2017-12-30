@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "72203376800",
+    "firebase_url": "https://delhi-commuters-guide.firebaseio.com",
+    "project_id": "delhi-commuters-guide",
+    "storage_bucket": "delhi-commuters-guide.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72203376800:android:9f298e988963b48b",
+        "android_client_info": {
+          "package_name": "com.developers.telelove"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "72203376800-4qrge4892m53501k1ceag0f509lvg5ah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIuuTE_2HW-dGOhahSBQMhu6o7M0AsGOg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

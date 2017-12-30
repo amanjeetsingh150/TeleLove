@@ -40,6 +40,15 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/show_widget_provider_info" />
         </receiver>
+
+        <service
+            android:name=".QuoteJobService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>
