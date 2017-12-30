@@ -10,7 +10,7 @@
     tools:context="com.developers.telelove.ui.activities.MainActivity">
 
     <fragment
-        android:id="@+id/fragment_movies"
+        android:id="@+id/fragment_shows"
         class="com.developers.telelove.ui.MainFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -18,7 +18,7 @@
         tools:layout="@layout/fragment_main" />
 
     <FrameLayout
-        android:id="@+id/movie_detail_container"
+        android:id="@+id/show_detail_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="0.6" />

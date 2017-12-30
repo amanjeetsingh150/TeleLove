@@ -28,6 +28,7 @@ import com.developers.telelove.adapters.SimilarShowsAdapter;
 import com.developers.telelove.data.ShowContract;
 import com.developers.telelove.model.CharactersModel.Cast;
 import com.developers.telelove.model.CharactersModel.CharacterResult;
+import com.developers.telelove.model.FavouriteShowsResult;
 import com.developers.telelove.model.PopularShowsModel.PopularResultData;
 import com.developers.telelove.model.PopularShowsModel.Result;
 import com.developers.telelove.model.SimilarShowsResult.SimilarShowDetails;
@@ -98,6 +99,7 @@ public class DetailsFragment extends Fragment {
     private TopRatedDetailResults ratedDetailResults;
     private CharacterListAdapter characterListAdapter;
     private List<Cast> castList;
+    private FavouriteShowsResult favouriteShowsResult;
 
 
     public DetailsFragment() {
@@ -108,18 +110,40 @@ public class DetailsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((App) getActivity().getApplication()).getNetComponent().inject(this);
+        boolean isTabUsed = getActivity().getResources().getBoolean(R.bool.tab);
         Bundle bundle = getArguments();
-        detailsJson = bundle.getString(Constants.KEY_DETAILS);
         gson = new Gson();
         preference = sharedPreferences.getString(getActivity().getString(R.string.preferences_key),
                 "0");
         Log.d(TAG, " " + preference + detailsJson);
         switch (preference) {
             case "0":
-                popularResultData = gson.fromJson(detailsJson, Result.class);
+                if (!isTabUsed) {
+                    detailsJson = bundle.getString(Constants.KEY_DETAILS);
+                    popularResultData = gson.fromJson(detailsJson, Result.class);
+                } else {
+                    detailsJson = bundle.getString(Constants.KEY_POPULAR_SHOWS);
+                    popularResultData = gson.fromJson(detailsJson, Result.class);
+                }
                 break;
             case "1":
-                ratedDetailResults = gson.fromJson(detailsJson, TopRatedDetailResults.class);
+                if (!isTabUsed) {
+                    detailsJson = bundle.getString(Constants.KEY_DETAILS);
+                    ratedDetailResults = gson.fromJson(detailsJson, TopRatedDetailResults.class);
+                } else {
+                    detailsJson = bundle.getString(Constants.KEY_TOP_RATED);
+                    ratedDetailResults = gson.fromJson(detailsJson, TopRatedDetailResults.class);
+                }
+                break;
+            case "2":
+                if (!isTabUsed) {
+                    detailsJson = bundle.getString(Constants.KEY_DETAILS);
+                    favouriteShowsResult = gson.fromJson(detailsJson, FavouriteShowsResult.class);
+                } else {
+                    detailsJson = bundle.getString(Constants.KEY_FAVOURITES);
+                    favouriteShowsResult = gson.fromJson(detailsJson, FavouriteShowsResult.class);
+                }
+                break;
         }
     }
 

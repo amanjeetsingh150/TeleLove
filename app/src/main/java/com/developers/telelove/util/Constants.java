@@ -12,6 +12,7 @@ public class Constants {
     public static final String KEY_POPULAR_SHOWS = "popularShows";
     public static final String KEY_DETAILS = "detailJson";
     public static final String KEY_TOP_RATED = "topRatedShow";
+    public static final String KEY_FAVOURITES = "favouriteShow";
 
 
 }

@@ -101,7 +101,6 @@ public class MainFragment extends Fragment implements
     private PopularShowsAdapter popularShowsAdapter;
     private List<Result> resultList = new ArrayList<>();
     private List<TopRatedDetailResults> ratedDetailResults;
-    private List<PopularResultData> popularResultList = new ArrayList<>();
     private List<FavouriteShowsResult> favouriteShowsResultList;
 
     public MainFragment() {
@@ -421,9 +420,15 @@ public class MainFragment extends Fragment implements
             Intent intent = new Intent(getActivity(), DetailActivity.class);
             intent.putExtra(Constants.KEY_POPULAR_SHOWS, resultJson);
             startActivity(intent);
-        }
-        else{
-
+        } else {
+            DetailsFragment detailsFragment = new DetailsFragment();
+            gson = new Gson();
+            resultJson = gson.toJson(result);
+            Bundle bundle = new Bundle();
+            bundle.putString(Constants.KEY_POPULAR_SHOWS, resultJson);
+            detailsFragment.setArguments(bundle);
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.show_detail_container, detailsFragment).commit();
         }
     }
 
@@ -436,9 +441,15 @@ public class MainFragment extends Fragment implements
             Intent intent = new Intent(getActivity(), DetailActivity.class);
             intent.putExtra(Constants.KEY_TOP_RATED, topRatedShowJson);
             startActivity(intent);
-        }
-        else{
-
+        } else {
+            DetailsFragment detailsFragment = new DetailsFragment();
+            gson = new Gson();
+            String topRatedJson = gson.toJson(ratedDetailResults);
+            Bundle bundle = new Bundle();
+            bundle.putString(Constants.KEY_TOP_RATED, topRatedJson);
+            detailsFragment.setArguments(bundle);
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.show_detail_container, detailsFragment).commit();
         }
     }
 
@@ -446,10 +457,20 @@ public class MainFragment extends Fragment implements
     public void onFavouriteShowClick(FavouriteShowsResult favouriteShowsResult, int position) {
         boolean isTabUsed = getActivity().getResources().getBoolean(R.bool.tab);
         if (!isTabUsed) {
-
-        }
-        else{
-
+            gson = new Gson();
+            String favouriteShowJson = gson.toJson(favouriteShowsResult);
+            Intent intent = new Intent();
+            intent.putExtra(Constants.KEY_FAVOURITES, favouriteShowJson);
+            startActivity(intent);
+        } else {
+            DetailsFragment detailsFragment = new DetailsFragment();
+            gson = new Gson();
+            String favouriteShowJson = gson.toJson(favouriteShowsResult);
+            Bundle bundle = new Bundle();
+            bundle.putString(Constants.KEY_FAVOURITES, favouriteShowJson);
+            detailsFragment.setArguments(bundle);
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.show_detail_container, detailsFragment).commit();
         }
     }
 
