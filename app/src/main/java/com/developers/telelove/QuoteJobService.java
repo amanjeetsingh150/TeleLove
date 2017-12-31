@@ -1,7 +1,16 @@
 package com.developers.telelove;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.developers.telelove.ui.activities.MainActivity;
+import com.developers.telelove.util.Constants;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.google.firebase.database.DataSnapshot;
@@ -14,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static java.security.AccessController.getContext;
+
 /**
  * Created by Amanjeet Singh on 31/12/17.
  */
@@ -22,6 +33,7 @@ public class QuoteJobService extends JobService {
 
 
     private static final String TAG = QuoteJobService.class.getSimpleName();
+    private static final int SHOWS_NOTIFICATION_ID = 6;
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private List<String> authorList, quoteList;
@@ -42,7 +54,6 @@ public class QuoteJobService extends JobService {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    Log.d(TAG, data.getValue() + " ");
                     for (DataSnapshot snapshot : data.getChildren()) {
                         if (snapshot.getKey().equals("author")) {
                             authorList.add(snapshot.getValue() + "");
@@ -69,7 +80,23 @@ public class QuoteJobService extends JobService {
 
     private void showQuote(List<String> authorList, List<String> quoteList) {
         int index = new Random().nextInt(quoteList.size() - 1);
-
+        Log.d(TAG, "Show this " + quoteList.get(index) + " - of " + authorList.get(index));
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.putExtra(Constants.KEY_QUOTES, quoteList.get(index));
+        intent.putExtra(Constants.KEY_AUTHOR, authorList.get(index));
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
+                intent, 0);
+        Notification notification = new NotificationCompat.Builder(getApplicationContext(), "channel_Id")
+                .setContentTitle("Quote for today")
+                .setContentText(quoteList.get(index) + "\n" + " From: " + authorList.get(index))
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build();
+        NotificationManager mNotificationManager =
+                (NotificationManager) getApplicationContext()
+                        .getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(SHOWS_NOTIFICATION_ID, notification);
     }
 
     @Override

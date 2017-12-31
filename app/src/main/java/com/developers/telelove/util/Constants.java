@@ -15,6 +15,8 @@ public class Constants {
     public static final String KEY_FAVOURITES = "favouriteShow";
     public static final String KEY_WIDGET_JSON = "widgetShowJson";
     public static final String SHARED_PREFERENCE_NAME = "MyPrefs";
+    public static final String KEY_QUOTES = "quotesKey";
+    public static final String KEY_AUTHOR = "authorKey";
 
 
 }

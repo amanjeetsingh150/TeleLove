@@ -90,24 +90,20 @@ public class SplashActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     FirebaseJobDispatcher dispatcher = new
                             FirebaseJobDispatcher(new GooglePlayDriver(getApplicationContext()));
-                    int periodicity = 120;
                     Job quoteJob = dispatcher.newJobBuilder()
                             .setService(QuoteJobService.class)
                             .setTag("quote")
                             .setRecurring(true)
-                            .setTrigger(Trigger.executionWindow(60,80))
+                            .setTrigger(Trigger.executionWindow(60, 80))
                             .build();
                     dispatcher.schedule(quoteJob);
-                    boolean s=dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS;
-                    Log.d(TAG, "Job scheduling"+ s);
+                    boolean s = dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS;
+                    Log.d(TAG, "Job scheduling" + s);
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 }
             });
-            dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-
-                }
+            dialogBuilder.setNegativeButton("No", (dialogInterface, i) -> {
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             });
             dialogBuilder.show();
         } else {
