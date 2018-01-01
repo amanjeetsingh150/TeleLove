@@ -80,4 +80,7 @@
     <string name="time_key">time</string>
     <string name="switch_title">Receive Quotes</string>
     <string name="time_preference_title">Time picker for Quotes</string>
+    <string name="title_widget">Title: </string>
+    <string name="release_widget">Release: </string>
+    <string name="rating_widget">Rating: </string>
 </resources>

@@ -72,5 +72,6 @@
         android:layout_margin="2dp"
         android:src="@drawable/ic_widgets_white_24dp"
         app:layout_anchor="@id/app_bar"
+        android:contentDescription="@string/desc_widget"
         app:layout_anchorGravity="bottom|end" />
 </android.support.design.widget.CoordinatorLayout>

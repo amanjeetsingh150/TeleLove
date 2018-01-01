@@ -38,11 +38,13 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.show_widget_provider);
-        views.setTextViewText(R.id.title_widget_text_view, "Title: " + result.getName());
-        views.setTextViewText(R.id.release_date_widget_text_view, "Release: " +
-                result.getFirstAirDate());
-        views.setTextViewText(R.id.rating_widget_text_view, "Rating: " +
-                String.valueOf(result.getVoteAverage()));
+        views.setTextViewText(R.id.title_widget_text_view,
+                context.getString(R.string.title_widget) + result.getName());
+        views.setTextViewText(R.id.release_date_widget_text_view,
+                context.getString(R.string.release_widget) + result.getFirstAirDate());
+        views.setTextViewText(R.id.rating_widget_text_view,
+                context.getString(R.string.rating_widget) +
+                        String.valueOf(result.getVoteAverage()));
         Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                 .appendEncodedPath(result.getPosterPath()).build();
         Picasso.with(context).load(posterUri).into(new Target() {
@@ -75,12 +77,13 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.show_widget_provider);
-        views.setTextViewText(R.id.title_widget_text_view, "Title: " +
-                ratedDetailResults.getName());
-        views.setTextViewText(R.id.release_date_widget_text_view, "Release Date: " +
-                ratedDetailResults.getFirstAirDate());
+        views.setTextViewText(R.id.title_widget_text_view,
+                context.getString(R.string.title_widget) + ratedDetailResults.getName());
+        views.setTextViewText(R.id.release_date_widget_text_view,
+                context.getString(R.string.release_widget) +
+                        ratedDetailResults.getFirstAirDate());
         views.setTextViewText(R.id.rating_widget_text_view,
-                "Rating: " + String.valueOf(ratedDetailResults.getVoteAverage()));
+                context.getString(R.string.rating_widget) + String.valueOf(ratedDetailResults.getVoteAverage()));
         Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
                 .appendEncodedPath(ratedDetailResults.getPosterPath()).build();
         Picasso.with(context).load(posterUri).into(new Target() {
@@ -113,11 +116,12 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.show_widget_provider);
-        views.setTextViewText(R.id.title_widget_text_view, "Title: " +
+        views.setTextViewText(R.id.title_widget_text_view, context.getString(R.string.title_widget) +
                 result.getTitle());
-        views.setTextViewText(R.id.release_date_widget_text_view, "Release: " +
-                result.getReleaseDate());
-        views.setTextViewText(R.id.rating_widget_text_view, "Rating: " + result.getRating());
+        views.setTextViewText(R.id.release_date_widget_text_view,
+                context.getString(R.string.release_widget) + result.getReleaseDate());
+        views.setTextViewText(R.id.rating_widget_text_view,
+                context.getString(R.string.rating_widget) + result.getRating());
         Picasso.with(context).load(result.getPosterPath()).into(new Target() {
 
             @Override
@@ -145,7 +149,7 @@ public class ShowWidgetProvider extends AppWidgetProvider {
 
         SharedPreferences shared = context
                 .getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
-        preference = shared.getString("order", "0");
+        preference = shared.getString(context.getString(R.string.preferences_key), "0");
         gson = new Gson();
         switch (preference) {
             case "0":
