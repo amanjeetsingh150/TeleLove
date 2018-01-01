@@ -24,6 +24,17 @@
             Favourites
         </item>
     </string-array>
+    <string-array name="quotes_sort_name">
+        <item>
+            Once a day
+        </item>
+        <item>
+            Twice a day
+        </item>
+        <item>
+            Thrice a day
+        </item>
+    </string-array>
     <string-array name="sort_values">
         <item>
             0
@@ -35,8 +46,24 @@
             2
         </item>
     </string-array>
+    <string-array name="quotes_sort_values">
+        <item>
+            3
+        </item>
+        <item>
+            4
+        </item>
+        <item>
+            5
+        </item>
+    </string-array>
     <string name="preferences_key">order</string>
     <string name="sort_by">Sort By</string>
     <string name="added_favorites">Added to Favourites</string>
     <string name="removed_favourites">Removed from Favourites</string>
+    <string name="splash_dialog_message">"Do you want to receive quotes as notification?"</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="job_tag">quote</string>
+    <string name="add_to_widget">Added to Widget</string>
 </resources>

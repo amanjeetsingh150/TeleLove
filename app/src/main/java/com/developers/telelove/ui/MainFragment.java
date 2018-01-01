@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -22,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.developers.telelove.App;
@@ -98,6 +101,9 @@ public class MainFragment extends Fragment implements
     Uri uri;
     CursorLoader mCursorLoader;
     TopRatedShowsAdapter topRatedShowsAdapter;
+    @BindView(R.id.no_favorites_placeholder)
+    ImageView noFavourites;
+    private Parcelable recyclerViewState;
     private PopularShowsAdapter popularShowsAdapter;
     private List<Result> resultList = new ArrayList<>();
     private List<TopRatedDetailResults> ratedDetailResults;
@@ -134,6 +140,10 @@ public class MainFragment extends Fragment implements
                         null, this);
                 break;
         }
+        if (savedInstanceState != null) {
+            recyclerViewState = savedInstanceState.getParcelable(Constants.KEY_RECYCLER_MAIN);
+            linearLayoutManager.onRestoreInstanceState(recyclerViewState);
+        }
         showsRecyclerView.setLayoutManager(linearLayoutManager);
         scrollListener = new PaginationScrollListener(linearLayoutManager) {
             @Override
@@ -167,12 +177,18 @@ public class MainFragment extends Fragment implements
             last = linearLayoutManager.getItemCount();
         }
         progressBar.setVisibility(View.GONE);
+        if (noFavourites.getVisibility() == View.VISIBLE) {
+            noFavourites.setVisibility(View.GONE);
+        }
     }
 
     private void initTopRatedAdapter(List<TopRatedDetailResults> ratedResults) {
         topRatedShowsAdapter = new TopRatedShowsAdapter(getActivity(), ratedResults);
         topRatedShowsAdapter.setClickCallBacks(this);
         showsRecyclerView.setAdapter(topRatedShowsAdapter);
+        if (noFavourites.getVisibility() == View.VISIBLE) {
+            noFavourites.setVisibility(View.GONE);
+        }
     }
 
     public void getPopularShowsFromApi(int page) {
@@ -272,6 +288,14 @@ public class MainFragment extends Fragment implements
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (linearLayoutManager != null) {
+            outState.putParcelable(Constants.KEY_RECYCLER_MAIN,
+                    linearLayoutManager.onSaveInstanceState());
+        }
+    }
 
     public void showLoadMoreSpinner() {
         showsRecyclerView.post(new Runnable() {
@@ -332,10 +356,24 @@ public class MainFragment extends Fragment implements
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.getCount() > 0) {
+            if (noFavourites.getVisibility() == View.VISIBLE) {
+                noFavourites.setVisibility(View.GONE);
+            }
             favouriteShowsResultList = getShowsFromCursor(data);
             initFavouritesAdapter(favouriteShowsResultList);
             progressBar.setVisibility(View.GONE);
             frameLayout.setBackgroundColor(Color.BLACK);
+            data.close();
+        } else {
+            frameLayout.setBackgroundColor(Color.WHITE);
+            noFavourites.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.GONE);
+            if (popularShowsAdapter != null) {
+                popularShowsAdapter.removeWhenFavoritesClicked();
+            }
+            if (topRatedShowsAdapter != null) {
+                topRatedShowsAdapter.removeWhenFavoritesClicked();
+            }
         }
     }
 
@@ -375,8 +413,8 @@ public class MainFragment extends Fragment implements
     private List<FavouriteShowsResult> getShowsFromCursor(Cursor data) {
         favouriteShowsResults = new ArrayList<>();
         if (data != null) {
-            data.moveToFirst();
             while (data.moveToNext()) {
+                Log.d(TAG, "hey");
                 String showId = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_ID));
                 String title = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_TITLE));
                 String poster = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_POSTER));
@@ -407,7 +445,7 @@ public class MainFragment extends Fragment implements
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        initFavouritesAdapter(null);
     }
 
 
@@ -459,7 +497,8 @@ public class MainFragment extends Fragment implements
         if (!isTabUsed) {
             gson = new Gson();
             String favouriteShowJson = gson.toJson(favouriteShowsResult);
-            Intent intent = new Intent(getActivity(),DetailActivity.class);
+            Intent intent = new Intent(getActivity(), DetailActivity.class);
+            Log.d(TAG, " " + favouriteShowJson);
             intent.putExtra(Constants.KEY_FAVOURITES, favouriteShowJson);
             startActivity(intent);
         } else {

@@ -17,6 +17,7 @@ public class Constants {
     public static final String SHARED_PREFERENCE_NAME = "MyPrefs";
     public static final String KEY_QUOTES = "quotesKey";
     public static final String KEY_AUTHOR = "authorKey";
+    public static final String KEY_RECYCLER_MAIN = "recyclerViewMainState";
 
 
 }

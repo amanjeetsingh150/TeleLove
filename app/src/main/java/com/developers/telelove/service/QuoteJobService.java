@@ -1,4 +1,4 @@
-package com.developers.telelove;
+package com.developers.telelove.service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -6,10 +6,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
-import com.developers.telelove.ui.activities.MainActivity;
+import com.developers.telelove.R;
+import com.developers.telelove.ui.activities.QuoteDisplayActivity;
 import com.developers.telelove.util.Constants;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
@@ -22,8 +22,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import static java.security.AccessController.getContext;
 
 /**
  * Created by Amanjeet Singh on 31/12/17.
@@ -81,7 +79,7 @@ public class QuoteJobService extends JobService {
     private void showQuote(List<String> authorList, List<String> quoteList) {
         int index = new Random().nextInt(quoteList.size() - 1);
         Log.d(TAG, "Show this " + quoteList.get(index) + " - of " + authorList.get(index));
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent = new Intent(getApplicationContext(), QuoteDisplayActivity.class);
         intent.putExtra(Constants.KEY_QUOTES, quoteList.get(index));
         intent.putExtra(Constants.KEY_AUTHOR, authorList.get(index));
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
@@ -89,7 +87,7 @@ public class QuoteJobService extends JobService {
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), "channel_Id")
                 .setContentTitle("Quote for today")
                 .setContentText(quoteList.get(index) + "\n" + " From: " + authorList.get(index))
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.drawable.tv_red)
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .build();

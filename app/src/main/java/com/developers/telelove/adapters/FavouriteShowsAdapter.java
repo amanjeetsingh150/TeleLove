@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.developers.telelove.R;
 import com.developers.telelove.model.FavouriteShowsResult;
 import com.developers.telelove.util.Utility;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -51,23 +53,15 @@ public class FavouriteShowsAdapter extends RecyclerView.Adapter
     @Override
     public void onBindViewHolder(FavouriteShowsViewHolder holder, int position) {
         Picasso.with(context).load(favouriteShowsResultList.get(position).getBackDropImagePath())
-                .into(new Target() {
+                .into(holder.favouriteImage, new Callback() {
                     @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        Palette palette = Palette.from(bitmap).generate();
-                        holder.favouriteImage.setImageBitmap(bitmap);
+                    public void onSuccess() {
                         holder.favouriteProgressBar.setVisibility(View.GONE);
-                        int color = palette.getMutedColor(0xFF333333);
-                        holder.favouriteCardView.setBackgroundColor(color);
+                        holder.favouriteCardView.setBackgroundColor(0xFF333333);
                     }
 
                     @Override
-                    public void onBitmapFailed(Drawable errorDrawable) {
-
-                    }
-
-                    @Override
-                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                    public void onError() {
 
                     }
                 });
@@ -76,6 +70,12 @@ public class FavouriteShowsAdapter extends RecyclerView.Adapter
             clickCallBacks.onFavouriteShowClick(favouriteShowsResultList.get(position),
                     position);
         });
+    }
+
+    public void swap(List<FavouriteShowsResult> favouriteShowsResults) {
+        this.favouriteShowsResultList.clear();
+        this.favouriteShowsResultList.addAll(favouriteShowsResults);
+        notifyDataSetChanged();
     }
 
     public void setClickCallBacks(Utility.ClickCallBacks clickCallBacks) {

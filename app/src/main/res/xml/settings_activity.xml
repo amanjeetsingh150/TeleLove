@@ -8,4 +8,16 @@
         android:key="@string/preferences_key"
         android:title="@string/sort_title" />
 
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="quote_preference"
+        android:title="Receive Quotes" />
+
+    <ListPreference
+        android:defaultValue="3"
+        android:entries="@array/quotes_sort_name"
+        android:entryValues="@array/quotes_sort_values"
+        android:key="time"
+        android:title="Time picker for Quotes" />
+
 </PreferenceScreen>

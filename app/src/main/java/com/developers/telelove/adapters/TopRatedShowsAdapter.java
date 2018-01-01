@@ -108,6 +108,11 @@ public class TopRatedShowsAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.clickCallBacks = clickCallBacks;
     }
 
+    public void removeWhenFavoritesClicked() {
+        this.ratedDetailResults.clear();
+        notifyDataSetChanged();
+    }
+
     private void loadImage(Uri backdrop, RecyclerView.ViewHolder holder, int position) {
         Picasso.with(context).load(backdrop).into(new Target() {
             @Override

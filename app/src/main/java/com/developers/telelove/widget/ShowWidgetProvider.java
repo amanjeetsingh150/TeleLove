@@ -118,9 +118,7 @@ public class ShowWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.release_date_widget_text_view, "Release: " +
                 result.getReleaseDate());
         views.setTextViewText(R.id.rating_widget_text_view, "Rating: " + result.getRating());
-        Uri posterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                .appendEncodedPath(result.getPosterPath()).build();
-        Picasso.with(context).load(posterUri).into(new Target() {
+        Picasso.with(context).load(result.getPosterPath()).into(new Target() {
 
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {

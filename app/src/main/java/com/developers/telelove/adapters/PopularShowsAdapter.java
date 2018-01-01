@@ -117,6 +117,11 @@ public class PopularShowsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         addItem(result);
     }
 
+    public void removeWhenFavoritesClicked(){
+        this.resultList.clear();
+        notifyDataSetChanged();
+    }
+
     public void addItem(Result resultItem) {
         resultList.add(resultItem);
         notifyItemInserted(resultList.size() - 1);

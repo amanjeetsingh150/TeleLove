@@ -19,4 +19,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/no_favorites_placeholder"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:src="@drawable/ic_not_interested_black_48dp"/>
+
 </FrameLayout>

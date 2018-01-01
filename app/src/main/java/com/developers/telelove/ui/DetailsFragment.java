@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -21,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import com.developers.telelove.App;
 import com.developers.telelove.BuildConfig;
@@ -239,7 +241,8 @@ public class DetailsFragment extends Fragment {
                             "0").apply();
                     ShowWidgetProvider.updateAppWidgetWithPopularShow(getActivity(),
                             appWidgetManager, appWidgetId, popularResultData);
-                    Snackbar.make(v, "Added to widget", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(v, getActivity().getString(R.string.add_to_widget)
+                            , Snackbar.LENGTH_SHORT).show();
                 });
                 break;
             case "1":
@@ -323,18 +326,17 @@ public class DetailsFragment extends Fragment {
                             "1").apply();
                     ShowWidgetProvider.updateAppWidgetWithRatedShow(getActivity(),
                             appWidgetManager, appWidgetId, ratedDetailResults);
-                    Snackbar.make(v, "Added to widget", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(v, getActivity().getString(R.string.add_to_widget)
+                            , Snackbar.LENGTH_SHORT).show();
                 });
                 break;
             case "2":
-                Uri favouritePosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
-                        .appendEncodedPath(favouriteShowsResult.getPosterPath()).build();
                 boolean favouritePresent = checkIfPresentInDB(Integer
                         .parseInt(favouriteShowsResult.getId()));
                 if (favouritePresent) {
                     materialFavoriteButton.setFavorite(true, false);
                 }
-                Picasso.with(getActivity()).load(favouritePosterUri.toString())
+                Picasso.with(getActivity()).load(favouriteShowsResult.getPosterPath())
                         .into(posterImageView, new Callback() {
                             @Override
                             public void onSuccess() {
@@ -346,10 +348,7 @@ public class DetailsFragment extends Fragment {
 
                             }
                         });
-                Uri favouriteShowBackDropUri = Uri.parse(Constants.BASE_URL_IMAGES)
-                        .buildUpon().appendEncodedPath(favouriteShowsResult.getBackDropImagePath())
-                        .build();
-                Picasso.with(getActivity()).load(favouriteShowBackDropUri.toString())
+                Picasso.with(getActivity()).load(favouriteShowsResult.getBackDropImagePath())
                         .into(backDropImage);
                 fetchCrewAndSimilarShowDetails(Integer.parseInt(favouriteShowsResult.getId()));
                 titleTextView.setText(favouriteShowsResult.getTitle());
@@ -363,7 +362,7 @@ public class DetailsFragment extends Fragment {
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_TITLE,
                                 favouriteShowsResult.getTitle());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_POSTER,
-                                favouritePosterUri.toString());
+                                favouriteShowsResult.getPosterPath());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_RELEASE_DATE,
                                 favouriteShowsResult.getReleaseDate());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_VOTE_AVERAGE,
@@ -373,7 +372,7 @@ public class DetailsFragment extends Fragment {
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_TRAILER,
                                 videoURL);
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_BACKDROP_IMG,
-                                favouriteShowBackDropUri.toString());
+                                favouriteShowsResult.getBackDropImagePath());
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_CHARACTERS,
                                 characterJson);
                         contentValues.put(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS,
@@ -408,7 +407,8 @@ public class DetailsFragment extends Fragment {
                             "2").apply();
                     ShowWidgetProvider.updateAppWidgetWithFavouriteShow(getActivity()
                             , appWidgetManager, appWidgetId, favouriteShowsResult);
-                    Snackbar.make(v, "Added to widget", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(v, getActivity().getString(R.string.add_to_widget)
+                            , Snackbar.LENGTH_SHORT).show();
                 });
                 break;
         }
