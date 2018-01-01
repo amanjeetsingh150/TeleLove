@@ -170,7 +170,6 @@ public class MainFragment extends Fragment implements
                             break;
                     }
                 } else {
-                    Log.d(TAG, "No internet");
                     showLoadMoreSpinner();
                 }
             }
@@ -210,7 +209,6 @@ public class MainFragment extends Fragment implements
     }
 
     public void getPopularShowsFromApi(int page) {
-        Log.d(TAG, "Getting Popular");
         if (page > 1) {
             showLoadMoreSpinner();
         }
@@ -364,7 +362,6 @@ public class MainFragment extends Fragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         uri = ShowContract.FavouriteShows.uri;
-        Log.d(TAG, "URI " + uri);
         mCursorLoader = new CursorLoader(getActivity(), uri,
                 ShowContract.FavouriteShows.projectionsForMainActivity,
                 null, null, null);
@@ -432,7 +429,6 @@ public class MainFragment extends Fragment implements
         favouriteShowsResults = new ArrayList<>();
         if (data != null) {
             while (data.moveToNext()) {
-                Log.d(TAG, "hey");
                 String showId = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_ID));
                 String title = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_TITLE));
                 String poster = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_POSTER));
@@ -443,7 +439,6 @@ public class MainFragment extends Fragment implements
                 String trailer = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_TRAILER));
                 String character = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_CHARACTERS));
                 String similarShows = data.getString(data.getColumnIndex(ShowContract.FavouriteShows.COLUMN_SIMILAR_SHOWS));
-                Log.d(TAG, title);
                 FavouriteShowsResult favouriteShows = new FavouriteShowsResult();
                 favouriteShows.setId(showId);
                 favouriteShows.setTitle(title);
@@ -516,7 +511,6 @@ public class MainFragment extends Fragment implements
             gson = new Gson();
             String favouriteShowJson = gson.toJson(favouriteShowsResult);
             Intent intent = new Intent(getActivity(), DetailActivity.class);
-            Log.d(TAG, " " + favouriteShowJson);
             intent.putExtra(Constants.KEY_FAVOURITES, favouriteShowJson);
             startActivity(intent);
         } else {

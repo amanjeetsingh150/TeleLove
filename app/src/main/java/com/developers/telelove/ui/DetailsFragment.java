@@ -124,7 +124,6 @@ public class DetailsFragment extends Fragment {
         gson = new Gson();
         preference = sharedPreferences.getString(getActivity().getString(R.string.preferences_key),
                 "0");
-        Log.d(TAG, " " + preference + detailsJson);
         switch (preference) {
             case "0":
                 if (!isTabUsed) {

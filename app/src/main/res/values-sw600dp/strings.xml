@@ -75,4 +75,9 @@
     <string name="msg_quote_twice">Quotes set to receive two time in a Day</string>
     <string name="msg_quote_thrice">Quotes set to receive three time in a Day</string>
     <string name="quote_today">Quote for today</string>
+    <string name="quotes_scheduled">Quotes successfully scheduled to receive once in a day.</string>
+    <string name="quote_switch_key">quote_preference</string>
+    <string name="time_key">time</string>
+    <string name="switch_title">Receive Quotes</string>
+    <string name="time_preference_title">Time picker for Quotes</string>
 </resources>

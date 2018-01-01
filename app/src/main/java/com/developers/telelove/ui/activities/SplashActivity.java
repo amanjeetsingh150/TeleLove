@@ -4,10 +4,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.developers.telelove.App;
 import com.developers.telelove.service.QuoteJobService;
@@ -28,6 +30,7 @@ public class SplashActivity extends AppCompatActivity {
 
     public static final String firstRun = "firstRun";
     private static final String TAG = SplashActivity.class.getSimpleName();
+    private static int periodicityForOneDay = 86400;
     @Inject
     SharedPreferences sharedPreferences;
     @Inject
@@ -56,11 +59,15 @@ public class SplashActivity extends AppCompatActivity {
                                 .setService(QuoteJobService.class)
                                 .setTag(getString(R.string.job_tag))
                                 .setRecurring(true)
-                                .setTrigger(Trigger.executionWindow(60, 80))
+                                .setTrigger(Trigger.executionWindow(periodicityForOneDay,
+                                        periodicityForOneDay + 30))
                                 .build();
                         dispatcher.schedule(quoteJob);
                         boolean s = dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS;
-                        Log.d(TAG, "Job scheduling" + s);
+                        if(s){
+                            Toast.makeText(getApplicationContext(),
+                                    getString(R.string.quotes_scheduled), Toast.LENGTH_SHORT).show();
+                        }
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     });
                     dialogBuilder.setNegativeButton(getString(R.string.no), (dialogInterface, i) -> {

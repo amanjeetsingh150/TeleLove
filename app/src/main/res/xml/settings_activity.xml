@@ -10,14 +10,14 @@
 
     <SwitchPreference
         android:defaultValue="true"
-        android:key="quote_preference"
-        android:title="Receive Quotes" />
+        android:key="@string/quote_switch_key"
+        android:title="@string/switch_title" />
 
     <ListPreference
         android:defaultValue="3"
         android:entries="@array/quotes_sort_name"
         android:entryValues="@array/quotes_sort_values"
-        android:key="time"
-        android:title="Time picker for Quotes" />
+        android:key="@string/time_key"
+        android:title="@string/time_preference_title" />
 
 </PreferenceScreen>

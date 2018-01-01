@@ -51,8 +51,8 @@ public class SettingsActivity extends AppCompatActivity {
             ((App) getActivity().getApplication()).getNetComponent().inject(this);
             addPreferencesFromResource(R.xml.settings_activity);
             bindPreference(findPreference(getString(R.string.preferences_key)));
-            Preference switchPreference = findPreference("quote_preference");
-            Preference listPreferenceForTime = findPreference("time");
+            Preference switchPreference = findPreference(getString(R.string.quote_switch_key));
+            Preference listPreferenceForTime = findPreference(getString(R.string.time_key));
             switchPreference.setOnPreferenceChangeListener((preference, o) -> {
                 if (preference instanceof SwitchPreference) {
                     boolean quotePref = (Boolean) o;
@@ -73,7 +73,6 @@ public class SettingsActivity extends AppCompatActivity {
                     ListPreference listPreferenceTime = (ListPreference) preference;
                     int prefIndex = listPreferenceTime.findIndexOfValue(stringValue);
                     if (prefIndex >= 0) {
-                        Log.d("SettingsFrag", "Clicked: " + listPreferenceTime.getEntries()[prefIndex]);
                         String clicked = String.valueOf
                                 (listPreferenceTime.getEntries()[prefIndex]);
                         if (clicked.equals(getActivity().getString(R.string.once_day))) {
