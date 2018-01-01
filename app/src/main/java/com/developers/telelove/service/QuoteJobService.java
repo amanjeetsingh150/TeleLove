@@ -32,6 +32,7 @@ public class QuoteJobService extends JobService {
 
     private static final String TAG = QuoteJobService.class.getSimpleName();
     private static final int SHOWS_NOTIFICATION_ID = 6;
+    private static final String NOTIFICATION_TITLE = "Quote for today";
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private List<String> authorList, quoteList;
@@ -86,7 +87,7 @@ public class QuoteJobService extends JobService {
         PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), requestCode,
                 intent, 0);
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), "channel_Id")
-                .setContentTitle("Quote for today")
+                .setContentTitle(NOTIFICATION_TITLE)
                 .setContentText(quoteList.get(index) + "\n" + " From: " + authorList.get(index))
                 .setSmallIcon(R.drawable.tv_red)
                 .setContentIntent(pi)

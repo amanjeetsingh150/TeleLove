@@ -8,7 +8,6 @@ import com.developers.telelove.ui.activities.MainActivity;
 import com.developers.telelove.ui.MainFragment;
 import com.developers.telelove.ui.activities.SettingsActivity;
 import com.developers.telelove.ui.activities.SplashActivity;
-import com.developers.telelove.util.FetchVideos;
 import com.developers.telelove.widget.ShowWidgetProvider;
 
 import javax.inject.Singleton;
@@ -29,8 +28,6 @@ public interface NetComponent {
     void inject(MainFragment mainFragment);
 
     void inject(DetailsFragment detailsFragment);
-
-    void inject(FetchVideos fetchVideos);
 
     void inject(SettingsActivity.PrefFrag prefFrag);
 
