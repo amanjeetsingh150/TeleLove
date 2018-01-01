@@ -57,10 +57,10 @@ public class SettingsActivity extends AppCompatActivity {
                 if (preference instanceof SwitchPreference) {
                     boolean quotePref = (Boolean) o;
                     if (quotePref) {
-                        preference.setSummary("Enabled");
+                        preference.setSummary(getActivity().getString(R.string.enabled));
                         listPreferenceForTime.setEnabled(true);
                     } else {
-                        preference.setSummary("Disabled");
+                        preference.setSummary(getActivity().getString(R.string.disabled));
                         dispatcher.cancelAll();
                         listPreferenceForTime.setEnabled(false);
                     }
@@ -76,11 +76,11 @@ public class SettingsActivity extends AppCompatActivity {
                         Log.d("SettingsFrag", "Clicked: " + listPreferenceTime.getEntries()[prefIndex]);
                         String clicked = String.valueOf
                                 (listPreferenceTime.getEntries()[prefIndex]);
-                        if (clicked.equals("Once a day")) {
+                        if (clicked.equals(getActivity().getString(R.string.once_day))) {
                             dispatcher.cancelAll();
                             Job quoteJob = dispatcher.newJobBuilder()
                                     .setService(QuoteJobService.class)
-                                    .setTag("quote")
+                                    .setTag(getActivity().getString(R.string.job_tag))
                                     .setRecurring(true)
                                     .setTrigger(Trigger
                                             .executionWindow(periodicityForDayOne,
@@ -89,15 +89,15 @@ public class SettingsActivity extends AppCompatActivity {
                             dispatcher.schedule(quoteJob);
                             if (dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS) {
                                 Toast.makeText(getActivity(),
-                                        "Quotes set to receive one time in a Day",
+                                        getActivity().getString(R.string.msg_quote_once),
                                         Toast.LENGTH_SHORT).show();
                             }
                         }
-                        if (clicked.equals("Twice a day")) {
+                        if (clicked.equals(getActivity().getString(R.string.twice_day))) {
                             dispatcher.cancelAll();
                             Job quoteJob = dispatcher.newJobBuilder()
                                     .setService(QuoteJobService.class)
-                                    .setTag("quote")
+                                    .setTag(getActivity().getString(R.string.job_tag))
                                     .setRecurring(true)
                                     .setTrigger(Trigger
                                             .executionWindow(periodicityForTwoTimesInDay,
@@ -106,15 +106,15 @@ public class SettingsActivity extends AppCompatActivity {
                             dispatcher.schedule(quoteJob);
                             if (dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS) {
                                 Toast.makeText(getActivity(),
-                                        "Quotes set to receive two time in a Day",
+                                        getActivity().getString(R.string.msg_quote_twice),
                                         Toast.LENGTH_SHORT).show();
                             }
                         }
-                        if (clicked.equals("Thrice a day")) {
+                        if (clicked.equals(getActivity().getString(R.string.thrice_day))) {
                             dispatcher.cancelAll();
                             Job quoteJob = dispatcher.newJobBuilder()
                                     .setService(QuoteJobService.class)
-                                    .setTag("quote")
+                                    .setTag(getActivity().getString(R.string.job_tag))
                                     .setRecurring(true)
                                     .setTrigger(Trigger
                                             .executionWindow(periodicityForThreeTimesInDay,
@@ -123,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
                             dispatcher.schedule(quoteJob);
                             if (dispatcher.schedule(quoteJob) == SCHEDULE_RESULT_SUCCESS) {
                                 Toast.makeText(getActivity(),
-                                        "Quotes set to receive three time in a Day",
+                                        getActivity().getString(R.string.msg_quote_thrice),
                                         Toast.LENGTH_SHORT).show();
                             }
                         }

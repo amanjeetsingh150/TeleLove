@@ -65,7 +65,6 @@ public class SplashActivity extends AppCompatActivity {
                     });
                     dialogBuilder.setNegativeButton(getString(R.string.no), (dialogInterface, i) -> {
                         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                     });
                     dialogBuilder.show();
@@ -73,7 +72,6 @@ public class SplashActivity extends AppCompatActivity {
             }, 3000);
         } else {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }
 
@@ -89,5 +87,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         sharedPreferences.edit().putBoolean(firstRun, false).apply();
+        finish();
     }
 }

@@ -4,6 +4,7 @@ package com.developers.telelove.ui;
 import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -41,6 +42,7 @@ import com.developers.telelove.model.VideosModel.VideoDetailResult;
 import com.developers.telelove.model.VideosModel.VideoResult;
 import com.developers.telelove.util.ApiInterface;
 import com.developers.telelove.util.Constants;
+import com.developers.telelove.util.Utility;
 import com.developers.telelove.widget.ShowWidgetProvider;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.google.gson.Gson;
@@ -93,6 +95,8 @@ public class DetailsFragment extends Fragment {
     RecyclerView similarShowsRecyclerView;
     @BindView(R.id.fab_widget)
     FloatingActionButton widgetAddFab;
+    @BindView(R.id.play_button_trailer)
+    ImageView trailerPlay;
     LinearLayoutManager characterLayoutManager, similarShowLayoutManager;
     Observable<VideoResult> videoResultObservable;
     Observable<CharacterResult> characterResultObservable;
@@ -244,6 +248,21 @@ public class DetailsFragment extends Fragment {
                     Snackbar.make(v, getActivity().getString(R.string.add_to_widget)
                             , Snackbar.LENGTH_SHORT).show();
                 });
+                trailerPlay.setOnClickListener(v -> {
+                    if (Utility.isNetworkConnected(getActivity())) {
+                        videoURL = getVideoPath(popularResultData.getId());
+                        if (videoURL.equals(getActivity()
+                                .getString(R.string.trailer_not_available_error))) {
+                            Snackbar.make(v, getActivity().getString(R.string
+                                    .trailer_not_available_error), Snackbar.LENGTH_SHORT).show();
+                        } else {
+                            launchYoutube(videoURL);
+                        }
+                    } else {
+                        Snackbar.make(v, getActivity().getString(R.string.no_internet_connection),
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                });
                 break;
             case "1":
                 Uri topRatedPosterUri = Uri.parse(Constants.BASE_URL_IMAGES).buildUpon()
@@ -329,6 +348,21 @@ public class DetailsFragment extends Fragment {
                     Snackbar.make(v, getActivity().getString(R.string.add_to_widget)
                             , Snackbar.LENGTH_SHORT).show();
                 });
+                trailerPlay.setOnClickListener(v -> {
+                    if (Utility.isNetworkConnected(getActivity())) {
+                        videoURL = getVideoPath(ratedDetailResults.getId());
+                        if (videoURL.equals(getActivity()
+                                .getString(R.string.trailer_not_available_error))) {
+                            Snackbar.make(v, getActivity().getString(R.string
+                                    .trailer_not_available_error), Snackbar.LENGTH_SHORT).show();
+                        } else {
+                            launchYoutube(videoURL);
+                        }
+                    } else {
+                        Snackbar.make(v, getActivity().getString(R.string.no_internet_connection),
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                });
                 break;
             case "2":
                 boolean favouritePresent = checkIfPresentInDB(Integer
@@ -410,9 +444,35 @@ public class DetailsFragment extends Fragment {
                     Snackbar.make(v, getActivity().getString(R.string.add_to_widget)
                             , Snackbar.LENGTH_SHORT).show();
                 });
+                trailerPlay.setOnClickListener(v -> {
+                    if (Utility.isNetworkConnected(getActivity())) {
+                        videoURL = getVideoPath(Integer.parseInt(favouriteShowsResult.getId()));
+                        if(videoURL==null){
+                            Snackbar.make(v, getActivity().getString(R.string
+                                    .trailer_not_available_error), Snackbar.LENGTH_SHORT).show();
+                        }
+                        else{
+                            if (videoURL.equals(getActivity()
+                                    .getString(R.string.trailer_not_available_error))) {
+                                Snackbar.make(v, getActivity().getString(R.string
+                                        .trailer_not_available_error), Snackbar.LENGTH_SHORT).show();
+                            } else {
+                                launchYoutube(videoURL);
+                            }
+                        }
+                    } else {
+                        Snackbar.make(v, getActivity().getString(R.string.no_internet_connection),
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                });
                 break;
         }
         return view;
+    }
+
+    private void launchYoutube(String address) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
+        startActivity(intent);
     }
 
     private boolean checkIfPresentInDB(int id) {

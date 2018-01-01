@@ -10,6 +10,7 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -128,12 +129,22 @@ public class MainFragment extends Fragment implements
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         switch (preference) {
             case "0":
-                getPopularShowsFromApi(1);
-                frameLayout.setBackgroundColor(Color.BLACK);
+                if (Utility.isNetworkConnected(getActivity())) {
+                    getPopularShowsFromApi(1);
+                    frameLayout.setBackgroundColor(Color.BLACK);
+                } else {
+                    Snackbar.make(view, getActivity().getString(R.string.no_internet_connection),
+                            Snackbar.LENGTH_SHORT).show();
+                }
                 break;
             case "1":
-                getTopRatedShowsFromApi(START_PAGE);
-                frameLayout.setBackgroundColor(Color.BLACK);
+                if (Utility.isNetworkConnected(getActivity())) {
+                    getTopRatedShowsFromApi(START_PAGE);
+                    frameLayout.setBackgroundColor(Color.BLACK);
+                } else {
+                    Snackbar.make(view, getActivity().getString(R.string.no_internet_connection),
+                            Snackbar.LENGTH_SHORT).show();
+                }
                 break;
             case "2":
                 getActivity().getSupportLoaderManager().initLoader(SHOWS_LOADER,
@@ -142,7 +153,6 @@ public class MainFragment extends Fragment implements
         }
         if (savedInstanceState != null) {
             recyclerViewState = savedInstanceState.getParcelable(Constants.KEY_RECYCLER_MAIN);
-            linearLayoutManager.onRestoreInstanceState(recyclerViewState);
         }
         showsRecyclerView.setLayoutManager(linearLayoutManager);
         scrollListener = new PaginationScrollListener(linearLayoutManager) {
@@ -167,6 +177,14 @@ public class MainFragment extends Fragment implements
         };
         showsRecyclerView.addOnScrollListener(scrollListener);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (recyclerViewState != null) {
+            linearLayoutManager.onRestoreInstanceState(recyclerViewState);
+        }
     }
 
     private void initAdapter(List<Result> results) {

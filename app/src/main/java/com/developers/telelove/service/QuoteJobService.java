@@ -82,7 +82,8 @@ public class QuoteJobService extends JobService {
         Intent intent = new Intent(getApplicationContext(), QuoteDisplayActivity.class);
         intent.putExtra(Constants.KEY_QUOTES, quoteList.get(index));
         intent.putExtra(Constants.KEY_AUTHOR, authorList.get(index));
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
+        int requestCode = new Random().nextInt(100);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), requestCode,
                 intent, 0);
         Notification notification = new NotificationCompat.Builder(getApplicationContext(), "channel_Id")
                 .setContentTitle("Quote for today")
