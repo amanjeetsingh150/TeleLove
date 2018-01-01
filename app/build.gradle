@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'udacity'
             keyPassword 'amanjeetsingh'
-            storeFile file('/home/dell/Desktop/Projects/Telelove/keystore/telelove.jks')
+            storeFile file("$rootDir/telelove.jks")
             storePassword 'amanjeetsingh'
         }
     }
